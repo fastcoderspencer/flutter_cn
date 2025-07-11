@@ -272,40 +272,28 @@ class GlobalObjectKey<T extends State<StatefulWidget>> extends GlobalKey<T> {
   }
 }
 
-/// Describes the configuration for an [Element].
+/// 描述 [Element] 的配置。
 ///
-/// Widgets are the central class hierarchy in the Flutter framework. A widget
-/// is an immutable description of part of a user interface. Widgets can be
-/// inflated into elements, which manage the underlying render tree.
+/// Widget 是 Flutter 框架中的核心类层级。Widget 是用户界面某部分的不可变描述，
+/// 可以被扩充为 element 来管理底层的渲染树。
 ///
-/// Widgets themselves have no mutable state (all their fields must be final).
-/// If you wish to associate mutable state with a widget, consider using a
-/// [StatefulWidget], which creates a [State] object (via
-/// [StatefulWidget.createState]) whenever it is inflated into an element and
-/// incorporated into the tree.
+/// Widget 本身没有可变状态（所有字段都必须是 final）。如果需要给 widget 关联可变
+/// 状态，请考虑使用 [StatefulWidget]。当 widget 被扩充为 element 并合入树中时，
+/// 会通过 [StatefulWidget.createState] 创建相应的 [State] 对象。
 ///
-/// A given widget can be included in the tree zero or more times. In particular
-/// a given widget can be placed in the tree multiple times. Each time a widget
-/// is placed in the tree, it is inflated into an [Element], which means a
-/// widget that is incorporated into the tree multiple times will be inflated
-/// multiple times.
+/// 同一个 widget 可以在树中出现零次或多次。每次将 widget 放入树中时，都会被扩充为
+/// 一个 [Element]，因此多次合入树的 widget 会被多次扩充。
 ///
-/// The [key] property controls how one widget replaces another widget in the
-/// 树。如果两个 widget 的 [runtimeType] 和 [key] 属性
-/// 分别是 [operator==]，那么新的 widget 将通过
-/// 更新底层的 element（即，通过使用新的 widget 调用 [Element.update]）来替换旧的 widget。
-/// 否则，旧的 element 将从树中移除，新的
-/// widget 将被扩充为一个 element，然后新的 element 将被插入到
-/// 树中。
+/// [key] 属性控制一个 widget 如何在树中替换另一个 widget。如果两个 widget 的
+/// [runtimeType] 和 [key] 分别相等，那么新的 widget 会通过更新底层 element
+///（即使用新的 widget 调用 [Element.update]）来替换旧的 widget。否则旧 element 会
+/// 从树中移除，新的 widget 会被扩充为 element 并插入树中。
 ///
 /// 另请参阅：
 ///
-///  * [StatefulWidget] 和 [State]，用于在其生命周期内可以多次
-///    以不同方式构建的 widget。
-///  * [InheritedWidget]，用于引入可被
-///    后代 widget 读取的环境状态的 widget。
-///  * [StatelessWidget]，用于在给定
-///    特定配置和环境状态的情况下始终以相同方式构建的 widget。
+///  * [StatefulWidget] 与 [State]，用于在其生命周期内可以多次以不同方式构建的 widget。
+///  * [InheritedWidget]，用于引入可供后代 widget 读取的环境状态的 widget。
+///  * [StatelessWidget]，用于在给定特定配置和环境状态下始终以相同方式构建的 widget。
 @immutable
 abstract class Widget extends DiagnosticableTree {
   /// 为子类初始化 [key]。
@@ -687,11 +675,10 @@ abstract class StatelessWidget extends Widget {
 ///
 /// {@tool snippet}
 ///
-/// This is a skeleton of a stateful widget subclass called `YellowBird`.
+/// 这是一个名为 `YellowBird` 的有状态 widget 子类的框架示例。
 ///
-/// In this example, the [State] has no actual state. State is normally
-/// represented as private member fields. Also, normally widgets have more
-/// constructor arguments, each of which corresponds to a `final` property.
+/// 在这个例子中，[State] 没有实际状态。状态通常表示为私有成员字段。
+/// 此外，widget 通常会有更多的构造函数参数，每个参数都对应一个 `final` 属性。
 ///
 /// ```dart
 /// class YellowBird extends StatefulWidget {
@@ -711,9 +698,8 @@ abstract class StatelessWidget extends Widget {
 /// {@end-tool}
 /// {@tool snippet}
 ///
-/// This example shows the more generic widget `Bird` which can be given a
-/// color and a child, and which has some internal state with a method that
-/// can be called to mutate it:
+/// 下一个示例展示了更通用的 widget `Bird`，可以为其指定颜色和子级，
+/// 它还有内部状态，可通过方法来修改：
 ///
 /// ```dart
 /// class Bird extends StatefulWidget {
@@ -749,161 +735,119 @@ abstract class StatelessWidget extends Widget {
 /// ```
 /// {@end-tool}
 ///
-/// By convention, widget constructors only use named arguments. Also by
-/// convention, the first argument is [key], and the last argument is `child`,
-/// `children`, or the equivalent.
+/// 按照惯例，widget 构造函数仅使用命名参数。同样按照惯例，
+/// 第一个参数是 [key]，最后一个参数是 `child`、`children` 或等效项。
 ///
-/// See also:
+/// 另请参阅：
 ///
-///  * [State], where the logic behind a [StatefulWidget] is hosted.
-///  * [StatelessWidget], for widgets that always build the same way given a
-///    particular configuration and ambient state.
-///  * [InheritedWidget], for widgets that introduce ambient state that can
-///    be read by descendant widgets.
+///  * [State]，其中存放 [StatefulWidget] 的逻辑。
+///  * [StatelessWidget]，用于在给定特定配置和环境状态下始终以同样方式构建的 widget。
+///  * [InheritedWidget]，用于引入可供后代 widget 读取的环境状态的 widget。
 abstract class StatefulWidget extends Widget {
   /// Initializes [key] for subclasses.
   const StatefulWidget({super.key});
 
-  /// Creates a [StatefulElement] to manage this widget's location in the tree.
+  /// 创建一个 [StatefulElement] 来管理此 widget 在树中的位置。
   ///
-  /// It is uncommon for subclasses to override this method.
+  /// 子类极少需要重写此方法。
   @override
   StatefulElement createElement() => StatefulElement(this);
 
-  /// Creates the mutable state for this widget at a given location in the tree.
+  /// 为此 widget 在树中的给定位置创建可变状态。
   ///
-  /// Subclasses should override this method to return a newly created
-  /// instance of their associated [State] subclass:
+  /// 子类应覆盖此方法以返回其关联 [State] 子类的新实例：
   ///
   /// ```dart
   /// @override
   /// State<SomeWidget> createState() => _SomeWidgetState();
   /// ```
   ///
-  /// The framework can call this method multiple times over the lifetime of
-  /// a [StatefulWidget]. For example, if the widget is inserted into the tree
-  /// in multiple locations, the framework will create a separate [State] object
-  /// for each location. Similarly, if the widget is removed from the tree and
-  /// later inserted into the tree again, the framework will call [createState]
-  /// again to create a fresh [State] object, simplifying the lifecycle of
-  /// [State] objects.
+  /// 在 [StatefulWidget] 的生命周期内，框架可能多次调用此方法。
+  /// 例如，如果该 widget 被插入到树中的多个位置，框架会为每个位置
+  /// 创建一个单独的 [State] 对象。类似地，如果该 widget 从树中移除后
+  /// 又重新插入，框架也会再次调用 [createState] 创建新的 [State] 对象，
+  /// 从而简化 [State] 对象的生命周期。
   @protected
   @factory
   State createState();
 }
 
-/// Tracks the lifecycle of [State] objects when asserts are enabled.
+/// 在启用断言时跟踪 [State] 对象的生命周期。
 enum _StateLifecycle {
-  /// The [State] object has been created. [State.initState] is called at this
-  /// time.
+  /// 已创建 [State] 对象，此时会调用 [State.initState]。
   created,
 
-  /// The [State.initState] method has been called but the [State] object is
-  /// not yet ready to build. [State.didChangeDependencies] is called at this time.
+  /// 已调用 [State.initState]，但该 [State] 对象尚未准备好构建。
+  /// 此时会调用 [State.didChangeDependencies]。
   initialized,
 
-  /// The [State] object is ready to build and [State.dispose] has not yet been
-  /// called.
+  /// [State] 对象已准备好构建，且尚未调用 [State.dispose]。
   ready,
 
-  /// The [State.dispose] method has been called and the [State] object is
-  /// no longer able to build.
+  /// 已调用 [State.dispose]，该 [State] 对象不再能够构建。
   defunct,
 }
 
-/// The signature of [State.setState] functions.
+/// [State.setState] 函数的签名。
 typedef StateSetter = void Function(VoidCallback fn);
 
-/// The logic and internal state for a [StatefulWidget].
+/// [StatefulWidget] 的逻辑和内部状态。
 ///
-/// State is information that (1) can be read synchronously when the widget is
-/// built and (2) might change during the lifetime of the widget. It is the
-/// responsibility of the widget implementer to ensure that the [State] is
-/// promptly notified when such state changes, using [State.setState].
+/// 状态是在构建 widget 时可以同步读取，并且可能在 widget 生命周期内变化的信息。
+/// widget 实现者有责任在状态变化时及时通过 [State.setState] 通知 [State]。
 ///
-/// [State] objects are created by the framework by calling the
-/// [StatefulWidget.createState] method when inflating a [StatefulWidget] to
-/// insert it into the tree. Because a given [StatefulWidget] instance can be
-/// inflated multiple times (e.g., the widget is incorporated into the tree in
-/// multiple places at once), there might be more than one [State] object
-/// associated with a given [StatefulWidget] instance. Similarly, if a
-/// [StatefulWidget] is removed from the tree and later inserted in to the tree
-/// again, the framework will call [StatefulWidget.createState] again to create
-/// a fresh [State] object, simplifying the lifecycle of [State] objects.
+/// 当扩充 [StatefulWidget] 将其插入树中时，框架会调用
+/// [StatefulWidget.createState] 来创建 [State] 对象。由于同一个
+/// [StatefulWidget] 实例可能在树中的多个位置被扩充，因此可能会有多个
+/// [State] 对象与该实例关联。类似地，如果该 widget 从树中移除后又重新插入，
+/// 框架也会再次调用 [StatefulWidget.createState] 来创建新的 [State] 对象，
+/// 从而简化 [State] 对象的生命周期。
 ///
-/// [State] objects have the following lifecycle:
+/// [State] 对象遵循以下生命周期：
 ///
-///  * The framework creates a [State] object by calling
-///    [StatefulWidget.createState].
-///  * The newly created [State] object is associated with a [BuildContext].
-///    This association is permanent: the [State] object will never change its
-///    [BuildContext]. However, the [BuildContext] itself can be moved around
-///    the tree along with its subtree. At this point, the [State] object is
-///    considered [mounted].
-///  * The framework calls [initState]. Subclasses of [State] should override
-///    [initState] to perform one-time initialization that depends on the
-///    [BuildContext] or the widget, which are available as the [context] and
-///    [widget] properties, respectively, when the [initState] method is
-///    called.
-///  * The framework calls [didChangeDependencies]. Subclasses of [State] should
-///    override [didChangeDependencies] to perform initialization involving
-///    [InheritedWidget]s. If [BuildContext.dependOnInheritedWidgetOfExactType] is
-///    called, the [didChangeDependencies] method will be called again if the
-///    inherited widgets subsequently change or if the widget moves in the tree.
-///  * At this point, the [State] object is fully initialized and the framework
-///    might call its [build] method any number of times to obtain a
-///    description of the user interface for this subtree. [State] objects can
-///    spontaneously request to rebuild their subtree by calling their
-///    [setState] method, which indicates that some of their internal state
-///    has changed in a way that might impact the user interface in this
-///    subtree.
-///  * During this time, a parent widget might rebuild and request that this
-///    location in the tree update to display a new widget with the same
-///    [runtimeType] and [Widget.key]. When this happens, the framework will
-///    update the [widget] property to refer to the new widget and then call the
-///    [didUpdateWidget] method with the previous widget as an argument. [State]
-///    objects should override [didUpdateWidget] to respond to changes in their
-///    associated widget (e.g., to start implicit animations). The framework
-///    always calls [build] after calling [didUpdateWidget], which means any
-///    calls to [setState] in [didUpdateWidget] are redundant. (See also the
-///    discussion at [Element.rebuild].)
-///  * During development, if a hot reload occurs (whether initiated from the
-///    command line `flutter` tool by pressing `r`, or from an IDE), the
-///    [reassemble] method is called. This provides an opportunity to
-///    reinitialize any data that was prepared in the [initState] method.
-///  * If the subtree containing the [State] object is removed from the tree
-///    (e.g., because the parent built a widget with a different [runtimeType]
-///    or [Widget.key]), the framework calls the [deactivate] method. Subclasses
-///    should override this method to clean up any links between this object
-///    and other elements in the tree (e.g. if you have provided an ancestor
-///    with a pointer to a descendant's [RenderObject]).
-///  * At this point, the framework might reinsert this subtree into another
-///    part of the tree. If that happens, the framework will ensure that it
-///    calls [build] to give the [State] object a chance to adapt to its new
-///    location in the tree. If the framework does reinsert this subtree, it
-///    will do so before the end of the animation frame in which the subtree was
-///    removed from the tree. For this reason, [State] objects can defer
-///    releasing most resources until the framework calls their [dispose]
-///    method.
-///  * If the framework does not reinsert this subtree by the end of the current
-///    animation frame, the framework will call [dispose], which indicates that
-///    this [State] object will never build again. Subclasses should override
-///    this method to release any resources retained by this object (e.g.,
-///    stop any active animations).
-///  * After the framework calls [dispose], the [State] object is considered
-///    unmounted and the [mounted] property is false. It is an error to call
-///    [setState] at this point. This stage of the lifecycle is terminal: there
-///    is no way to remount a [State] object that has been disposed.
+///  * 框架通过调用 [StatefulWidget.createState] 创建 [State] 对象。
+///  * 新创建的 [State] 对象会与一个 [BuildContext] 关联。此关联是永久的：
+///    [State] 对象不会改变其 [BuildContext]；但 [BuildContext] 本身可以连同
+///    其子树在树中移动。此时，该 [State] 对象被认为已 [mounted]。
+///  * 框架调用 [initState]。 [State] 的子类应重写该方法，
+///    执行依赖于 [BuildContext] 或 widget 的一次性初始化；
+///    在调用该方法时可分别通过 [context] 和 [widget] 属性获取这些值。
+///  * 框架调用 [didChangeDependencies]。 [State] 的子类应重写此方法，
+///    以完成涉及 [InheritedWidget] 的初始化。如果调用了
+///    [BuildContext.dependOnInheritedWidgetOfExactType]，当继承的 widget
+///    随后发生变化或该 widget 在树中移动时，会再次调用此方法。
+///  * 此时 [State] 对象已完全初始化，框架可能多次调用其 [build] 方法，
+///    以获取此子树的界面描述。[State] 对象可以通过调用 [setState]
+///    主动请求重新构建其子树，以反映内部状态的变化。
+///  * 在此期间，父 widget 可能重新构建，并要求该位置显示新的 widget，
+///    其 [runtimeType] 和 [Widget.key] 与原先相同。此时框架会更新 [widget]
+///    属性指向新的 widget，并以旧 widget 作为参数调用 [didUpdateWidget]。
+///    [State] 对象应重写该方法以响应关联 widget 的变化（例如启动隐式动画）。
+///    框架总是在调用 [didUpdateWidget] 后调用 [build]，因此在其中再调用
+///    [setState] 是多余的。（另见 [Element.rebuild] 的讨论。）
+///  * 开发过程中，如果发生热重载（通过命令行 `flutter` 工具按 `r` 或在 IDE 中触发），
+///    会调用 [reassemble] 方法，可在其中重新初始化在 [initState] 中准备的数据。
+///  * 如果包含此 [State] 对象的子树从树中移除（例如父级构建了具有不同
+///    [runtimeType] 或 [Widget.key] 的 widget），框架会调用 [deactivate]。
+///    子类应在此方法中清理该对象与树中其他元素的连接（例如向祖先提供了指向
+///    某个后代 [RenderObject] 的指针）。
+///  * 此时，框架可能会将该子树重新插入到树的其他位置。如果发生这种情况，
+///    框架会调用 [build]，让 [State] 对象有机会适应新的位置。如果框架确实
+///    重新插入此子树，会在其从旧位置移除的同一帧结束前完成。基于此原因，
+///    [State] 对象可以推迟释放大部分资源，直到框架调用它们的 [dispose] 方法。
+///  * 如果到当前动画帧结束时框架没有重新插入该子树，就会调用 [dispose]，
+///    表明此 [State] 对象将不再构建。子类应在此方法中释放对象持有的资源，
+///    例如停止正在运行的动画。
+///  * 当框架调用 [dispose] 后，该 [State] 对象被视为未挂载，[mounted] 为 false。
+///    此时调用 [setState] 是错误的。该阶段是终结性的：无法重新挂载已 dispose 的
+///    [State] 对象。
 ///
-/// See also:
+/// 另请参阅：
 ///
-///  * [StatefulWidget], where the current configuration of a [State] is hosted,
-///    and whose documentation has sample code for [State].
-///  * [StatelessWidget], for widgets that always build the same way given a
-///    particular configuration and ambient state.
-///  * [InheritedWidget], for widgets that introduce ambient state that can
-///    be read by descendant widgets.
-///  * [Widget], for an overview of widgets in general.
+///  * [StatefulWidget]，其文档提供了 [State] 的示例代码并保存当前配置。
+///  * [StatelessWidget]，用于在给定特定配置和环境状态下始终以相同方式构建的 widget。
+///  * [InheritedWidget]，用于引入可供后代 widget 读取的环境状态的 widget。
+///  * [Widget]，对 widget 的整体介绍。
 @optionalTypeArgs
 abstract class State<T extends StatefulWidget> with Diagnosticable {
   /// The current configuration.
@@ -928,16 +872,13 @@ abstract class State<T extends StatefulWidget> with Diagnosticable {
   /// created for that particular [Widget].
   bool _debugTypesAreRight(Widget widget) => widget is T;
 
-  /// The location in the tree where this widget builds.
+  /// 此 widget 在树中构建的位置。
   ///
-  /// The framework associates [State] objects with a [BuildContext] after
-  /// creating them with [StatefulWidget.createState] and before calling
-  /// [initState]. The association is permanent: the [State] object will never
-  /// change its [BuildContext]. However, the [BuildContext] itself can be moved
-  /// around the tree.
+  /// 框架在通过 [StatefulWidget.createState] 创建 [State] 对象并在调用
+  /// [initState] 之前，会将其与一个 [BuildContext] 关联。此关联是永久的：
+  /// [State] 对象的 [BuildContext] 不会改变，但 [BuildContext] 本身可以在树中移动。
   ///
-  /// After calling [dispose], the framework severs the [State] object's
-  /// connection with the [BuildContext].
+  /// 调用 [dispose] 后，框架会断开此 [State] 与其 [BuildContext] 的联系。
   BuildContext get context {
     assert(() {
       if (_element == null) {
@@ -953,48 +894,38 @@ abstract class State<T extends StatefulWidget> with Diagnosticable {
 
   StatefulElement? _element;
 
-  /// Whether this [State] object is currently in a tree.
+  /// 此 [State] 对象当前是否在树中。
   ///
-  /// After creating a [State] object and before calling [initState], the
-  /// framework "mounts" the [State] object by associating it with a
-  /// [BuildContext]. The [State] object remains mounted until the framework
-  /// calls [dispose], after which time the framework will never ask the [State]
-  /// object to [build] again.
+  /// 在创建 [State] 对象并调用 [initState] 之前，框架会将其与
+  /// [BuildContext] 关联，即“挂载”该对象。此对象在 [dispose] 调用之前一直
+  /// 处于挂载状态，之后框架将不再要求它执行 [build]。
   ///
-  /// It is an error to call [setState] unless [mounted] is true.
+  /// 除非 [mounted] 为 true，否则调用 [setState] 会报错。
   bool get mounted => _element != null;
 
-  /// Called when this object is inserted into the tree.
+  /// 当此对象插入到树中时调用。
   ///
-  /// The framework will call this method exactly once for each [State] object
-  /// it creates.
+  /// 框架在创建每个 [State] 对象时只会调用一次此方法。
   ///
-  /// Override this method to perform initialization that depends on the
-  /// location at which this object was inserted into the tree (i.e., [context])
-  /// or on the widget used to configure this object (i.e., [widget]).
+  /// 覆写该方法以执行依赖于此对象插入位置（即 [context]）或
+  /// 用于配置该对象的 widget（即 [widget]）的初始化操作。
   ///
   /// {@template flutter.widgets.State.initState}
-  /// If a [State]'s [build] method depends on an object that can itself
-  /// change state, for example a [ChangeNotifier] or [Stream], or some
-  /// other object to which one can subscribe to receive notifications, then
-  /// be sure to subscribe and unsubscribe properly in [initState],
-  /// [didUpdateWidget], and [dispose]:
+  /// 如果 [State] 的 [build] 方法依赖于其他会改变状态的对象，
+  /// 例如 [ChangeNotifier] 或 [Stream]，或其他可以订阅通知的对象，
+  /// 请确保在 [initState]、[didUpdateWidget] 和 [dispose] 中正确订阅和取消订阅：
   ///
-  ///  * In [initState], subscribe to the object.
-  ///  * In [didUpdateWidget] unsubscribe from the old object and subscribe
-  ///    to the new one if the updated widget configuration requires
-  ///    replacing the object.
-  ///  * In [dispose], unsubscribe from the object.
+  ///  * 在 [initState] 中订阅该对象。
+  ///  * 在 [didUpdateWidget] 中，如更新后的 widget 配置需要替换对象，
+  ///    则取消旧对象的订阅并订阅新对象。
+  ///  * 在 [dispose] 中取消订阅该对象。
   ///
   /// {@endtemplate}
   ///
-  /// You should not use [BuildContext.dependOnInheritedWidgetOfExactType] from this
-  /// method. However, [didChangeDependencies] will be called immediately
-  /// following this method, and [BuildContext.dependOnInheritedWidgetOfExactType] can
-  /// be used there.
+  /// 不应在此方法中使用 [BuildContext.dependOnInheritedWidgetOfExactType]，
+  /// 但在此方法之后会立即调用 [didChangeDependencies]，可在那里使用它。
   ///
-  /// Implementations of this method should start with a call to the inherited
-  /// method, as in `super.initState()`.
+  /// 重写此方法时应首先调用父类实现，例如 `super.initState()`。
   @protected
   @mustCallSuper
   void initState() {
@@ -1002,24 +933,20 @@ abstract class State<T extends StatefulWidget> with Diagnosticable {
     assert(debugMaybeDispatchCreated('widgets', 'State', this));
   }
 
-  /// Called whenever the widget configuration changes.
+  /// 每当 widget 的配置发生变化时调用。
   ///
-  /// If the parent widget rebuilds and requests that this location in the tree
-  /// update to display a new widget with the same [runtimeType] and
-  /// [Widget.key], the framework will update the [widget] property of this
-  /// [State] object to refer to the new widget and then call this method
-  /// with the previous widget as an argument.
+  /// 如果父 widget 重新构建并要求此位置显示具有相同 [runtimeType]
+  /// 和 [Widget.key] 的新 widget，框架会更新此 [State] 的 [widget] 属性
+  /// 指向新的 widget，并以旧 widget 作为参数调用此方法。
   ///
-  /// Override this method to respond when the [widget] changes (e.g., to start
-  /// implicit animations).
+  /// 当 [widget] 发生变化（例如启动隐式动画）时，可重写此方法以作出响应。
   ///
-  /// The framework always calls [build] after calling [didUpdateWidget], which
-  /// means any calls to [setState] in [didUpdateWidget] are redundant.
+  /// 框架在调用 [didUpdateWidget] 之后总会调用 [build]，
+  /// 因此在 [didUpdateWidget] 中调用 [setState] 是多余的。
   ///
   /// {@macro flutter.widgets.State.initState}
   ///
-  /// Implementations of this method should start with a call to the inherited
-  /// method, as in `super.didUpdateWidget(oldWidget)`.
+  /// 重写此方法时应首先调用父类实现，例如 `super.didUpdateWidget(oldWidget)`。
   ///
   /// _See the discussion at [Element.rebuild] for more information on when this
   /// method is called._
@@ -1042,33 +969,26 @@ abstract class State<T extends StatefulWidget> with Diagnosticable {
   @mustCallSuper
   void reassemble() {}
 
-  /// Notify the framework that the internal state of this object has changed.
+  /// 通知框架此对象的内部状态已发生变化。
   ///
-  /// Whenever you change the internal state of a [State] object, make the
-  /// change in a function that you pass to [setState]:
+  /// 每当更改 [State] 对象的内部状态时，都应在传递给 [setState] 的函数中完成：
   ///
   /// ```dart
   /// setState(() { _myState = newValue; });
   /// ```
   ///
-  /// The provided callback is immediately called synchronously. It must not
-  /// return a future (the callback cannot be `async`), since then it would be
-  /// unclear when the state was actually being set.
+  /// 提供的回调会立即同步执行，且不能返回 Future（即回调不能为 `async`），
+  /// 否则状态的设置时机将变得不确定。
   ///
-  /// Calling [setState] notifies the framework that the internal state of this
-  /// object has changed in a way that might impact the user interface in this
-  /// subtree, which causes the framework to schedule a [build] for this [State]
-  /// object.
+  /// 调用 [setState] 会通知框架此对象的内部状态已发生可能影响界面的变化，
+  /// 从而促使框架为该 [State] 安排一次 [build]。
   ///
-  /// If you just change the state directly without calling [setState], the
-  /// framework might not schedule a [build] and the user interface for this
-  /// subtree might not be updated to reflect the new state.
+  /// 如果直接修改状态而不调用 [setState]，框架可能不会安排 [build]，
+  /// 此子树的界面也就无法更新以反映新的状态。
   ///
-  /// Generally it is recommended that the [setState] method only be used to
-  /// wrap the actual changes to the state, not any computation that might be
-  /// associated with the change. For example, here a value used by the [build]
-  /// function is incremented, and then the change is written to disk, but only
-  /// the increment is wrapped in the [setState]:
+  /// 通常建议仅在 [setState] 中包裹实际的状态更改，而非与更改相关的其他计算。
+  /// 例如，下例中增加了 [build] 函数使用的值，并将变化写入磁盘，
+  /// 但只有递增操作包裹在 [setState] 中：
   ///
   /// ```dart
   /// Future<void> _incrementCounter() async {
