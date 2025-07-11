@@ -272,40 +272,28 @@ class GlobalObjectKey<T extends State<StatefulWidget>> extends GlobalKey<T> {
   }
 }
 
-/// Describes the configuration for an [Element].
+/// 描述 [Element] 的配置。
 ///
-/// Widgets are the central class hierarchy in the Flutter framework. A widget
-/// is an immutable description of part of a user interface. Widgets can be
-/// inflated into elements, which manage the underlying render tree.
+/// Widget 是 Flutter 框架中的核心类层级。Widget 是用户界面某部分的不可变描述，
+/// 可以被扩充为 element 来管理底层的渲染树。
 ///
-/// Widgets themselves have no mutable state (all their fields must be final).
-/// If you wish to associate mutable state with a widget, consider using a
-/// [StatefulWidget], which creates a [State] object (via
-/// [StatefulWidget.createState]) whenever it is inflated into an element and
-/// incorporated into the tree.
+/// Widget 本身没有可变状态（所有字段都必须是 final）。如果需要给 widget 关联可变
+/// 状态，请考虑使用 [StatefulWidget]。当 widget 被扩充为 element 并合入树中时，
+/// 会通过 [StatefulWidget.createState] 创建相应的 [State] 对象。
 ///
-/// A given widget can be included in the tree zero or more times. In particular
-/// a given widget can be placed in the tree multiple times. Each time a widget
-/// is placed in the tree, it is inflated into an [Element], which means a
-/// widget that is incorporated into the tree multiple times will be inflated
-/// multiple times.
+/// 同一个 widget 可以在树中出现零次或多次。每次将 widget 放入树中时，都会被扩充为
+/// 一个 [Element]，因此多次合入树的 widget 会被多次扩充。
 ///
-/// The [key] property controls how one widget replaces another widget in the
-/// 树。如果两个 widget 的 [runtimeType] 和 [key] 属性
-/// 分别是 [operator==]，那么新的 widget 将通过
-/// 更新底层的 element（即，通过使用新的 widget 调用 [Element.update]）来替换旧的 widget。
-/// 否则，旧的 element 将从树中移除，新的
-/// widget 将被扩充为一个 element，然后新的 element 将被插入到
-/// 树中。
+/// [key] 属性控制一个 widget 如何在树中替换另一个 widget。如果两个 widget 的
+/// [runtimeType] 和 [key] 分别相等，那么新的 widget 会通过更新底层 element
+///（即使用新的 widget 调用 [Element.update]）来替换旧的 widget。否则旧 element 会
+/// 从树中移除，新的 widget 会被扩充为 element 并插入树中。
 ///
 /// 另请参阅：
 ///
-///  * [StatefulWidget] 和 [State]，用于在其生命周期内可以多次
-///    以不同方式构建的 widget。
-///  * [InheritedWidget]，用于引入可被
-///    后代 widget 读取的环境状态的 widget。
-///  * [StatelessWidget]，用于在给定
-///    特定配置和环境状态的情况下始终以相同方式构建的 widget。
+///  * [StatefulWidget] 与 [State]，用于在其生命周期内可以多次以不同方式构建的 widget。
+///  * [InheritedWidget]，用于引入可供后代 widget 读取的环境状态的 widget。
+///  * [StatelessWidget]，用于在给定特定配置和环境状态下始终以相同方式构建的 widget。
 @immutable
 abstract class Widget extends DiagnosticableTree {
   /// 为子类初始化 [key]。
