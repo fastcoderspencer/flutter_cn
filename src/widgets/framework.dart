@@ -1491,79 +1491,70 @@ abstract class ParentDataWidget<T extends ParentData> extends ProxyWidget {
     assert(T != ParentData);
 
     final String description =
-        'The ParentDataWidget $this wants to apply ParentData of type $T to a RenderObject';
+        'ParentDataWidget $this 想要向 RenderObject 应用 $T 类型的 ParentData';
     return <DiagnosticsNode>[
       if (parentData == null)
-        ErrorDescription('$description, which has not been set up to receive any ParentData.')
+        ErrorDescription('$description，但其尚未设置为接收任何 ParentData')
       else
         ErrorDescription(
-          '$description, which has been set up to accept ParentData of incompatible type ${parentData.runtimeType}.',
+          '$description，但其已设置为接收与之不兼容的 ParentData 类型 ${parentData.runtimeType}',
         ),
-      ErrorHint(
-        'Usually, this means that the $runtimeType widget has the wrong ancestor RenderObjectWidget. '
-        'Typically, $runtimeType widgets are placed directly inside $debugTypicalAncestorWidgetDescription widgets.',
-      ),
+        ErrorHint(
+          '通常意味着 $runtimeType widget 拥有错误的祖先 RenderObjectWidget。'
+          '通常 $runtimeType widget 应直接放在 $debugTypicalAncestorWidgetDescription widget 内。',
+        ),
       if (parentDataCreator != null)
         ErrorHint(
-          'The offending $runtimeType is currently placed inside a ${parentDataCreator.runtimeType} widget.',
+          '问题 $runtimeType 当前被放置在 ${parentDataCreator.runtimeType} widget 中。',
         ),
       if (ownershipChain != null)
         ErrorDescription(
-          'The ownership chain for the RenderObject that received the incompatible parent data was:\n  $ownershipChain',
+          '接收到不兼容 ParentData 的 RenderObject 的所有权链为：\n  $ownershipChain',
         ),
     ];
   }
 
-  /// Write the data from this widget into the given render object's parent data.
+  /// 将此 widget 的数据写入给定渲染对象的父数据中。
   ///
-  /// The framework calls this function whenever it detects that the
-  /// [RenderObject] associated with the [child] has outdated
-  /// [RenderObject.parentData]. For example, if the render object was recently
-  /// inserted into the render tree, the render object's parent data might not
-  /// match the data in this widget.
+  /// 当框架检测到 [child] 对应的 [RenderObject] 所持有的
+  /// [RenderObject.parentData] 已不再正确时会调用此函数。例如渲染对象刚被
+  /// 插入渲染树时，其父数据可能与该 widget 中的数据不匹配。
   ///
-  /// Subclasses are expected to override this function to copy data from their
-  /// fields into the [RenderObject.parentData] field of the given render
-  /// object. The render object's parent is guaranteed to have been created by a
-  /// widget of type `T`, which usually means that this function can assume that
-  /// the render object's parent data object inherits from a particular class.
+  /// 子类应重写此函数，将自身字段中的数据复制到给定渲染对象的
+  /// [RenderObject.parentData] 字段中。该渲染对象的父级保证由 `T` 类型的
+  /// widget 创建，因此通常可以假设其父数据对象继承自特定类。
   ///
-  /// If this function modifies data that can change the parent's layout or
-  /// painting, this function is responsible for calling
-  /// [RenderObject.markNeedsLayout] or [RenderObject.markNeedsPaint] on the
-  /// parent, as appropriate.
+  /// 如果此函数修改了会影响父布局或绘制的数据，需要自行调用
+  /// [RenderObject.markNeedsLayout] 或 [RenderObject.markNeedsPaint] 通知父级。
   @protected
   void applyParentData(RenderObject renderObject);
 
-  /// Whether the [ParentDataElement.applyWidgetOutOfTurn] method is allowed
-  /// with this widget.
+  /// 是否允许使用 [ParentDataElement.applyWidgetOutOfTurn] 方法处理此 widget。
   ///
-  /// This should only return true if this widget represents a [ParentData]
-  /// configuration that will have no impact on the layout or paint phase.
+  /// 仅当该 widget 的 [ParentData] 配置不会影响布局或绘制阶段时才应返回 true。
   ///
-  /// See also:
+  /// 另请参阅：
   ///
-  ///  * [ParentDataElement.applyWidgetOutOfTurn], which verifies this in debug
-  ///    mode.
+  ///  * [ParentDataElement.applyWidgetOutOfTurn]，调试模式下会对此进行校验。
   @protected
   bool debugCanApplyOutOfTurn() => false;
 }
 
-/// Base class for widgets that efficiently propagate information down the tree.
+/// 在树中高效向下传播信息的 widget 的基类。
 ///
 /// {@youtube 560 315 https://www.youtube.com/watch?v=og-vJqLzg2c}
 ///
-/// To obtain the nearest instance of a particular type of inherited widget from
-/// a build context, use [BuildContext.dependOnInheritedWidgetOfExactType].
+/// 若要在构建上下文中获取最近的某种类型的继承 widget，
+/// 请使用 [BuildContext.dependOnInheritedWidgetOfExactType]。
 ///
-/// Inherited widgets, when referenced in this way, will cause the consumer to
-/// rebuild when the inherited widget itself changes state.
+/// 以这种方式引用继承 widget 时，当其自身状态发生变化，
+/// 依赖它的 widget 会重新构建。
 ///
 /// {@youtube 560 315 https://www.youtube.com/watch?v=Zbm3hjPjQMk}
 ///
 /// {@tool snippet}
 ///
-/// The following is a skeleton of an inherited widget called `FrogColor`:
+/// 以下示例展示名为 `FrogColor` 的继承 widget 框架：
 ///
 /// ```dart
 /// class FrogColor extends InheritedWidget {
@@ -1591,43 +1582,36 @@ abstract class ParentDataWidget<T extends ParentData> extends ProxyWidget {
 /// ```
 /// {@end-tool}
 ///
-/// ## Implementing the `of` and `maybeOf` methods
+/// ## 实现 `of` 与 `maybeOf` 方法
 ///
-/// The convention is to provide two static methods, `of` and `maybeOf`, on the
-/// [InheritedWidget] which call
-/// [BuildContext.dependOnInheritedWidgetOfExactType]. This allows the class to
-/// define its own fallback logic in case there isn't a widget in scope.
+/// 通常会在 [InheritedWidget] 上提供两个静态方法 `of` 与 `maybeOf`，
+/// 它们内部调用 [BuildContext.dependOnInheritedWidgetOfExactType]。
+/// 这样便可以在作用域内找不到相应 widget 时自行定义回退逻辑。
 ///
-/// The `of` method typically returns a non-nullable instance and asserts if the
-/// [InheritedWidget] isn't found, and the `maybeOf` method returns a nullable
-/// instance, and returns null if the [InheritedWidget] isn't found. The `of`
-/// method is typically implemented by calling `maybeOf` internally.
+/// `of` 通常返回非空实例，若未找到相应 [InheritedWidget] 则会断言；
+/// `maybeOf` 返回可空实例，找不到时返回 null。`of` 通常内部调用 `maybeOf` 实现。
 ///
-/// Sometimes, the `of` and `maybeOf` methods return some data rather than the
-/// inherited widget itself; for example, in this case it could have returned a
-/// [Color] instead of the `FrogColor` widget.
+/// 有时 `of` 和 `maybeOf` 返回的不是继承 widget 本身，而是其中的数据；
+/// 本例中完全可以直接返回 [Color] 而非 `FrogColor` widget。
 ///
-/// Occasionally, the inherited widget is an implementation detail of another
-/// class, and is therefore private. The `of` and `maybeOf` methods in that case
-/// are typically implemented on the public class instead. For example, [Theme]
-/// is implemented as a [StatelessWidget] that builds a private inherited
-/// widget; [Theme.of] looks for that private inherited widget using
-/// [BuildContext.dependOnInheritedWidgetOfExactType] and then returns the
-/// [ThemeData] inside it.
+/// 有时继承 widget 只是其它类的实现细节并保持私有，
+/// 此时 `of` 和 `maybeOf` 方法一般实现在公共类上。例如 [Theme]
+/// 实际是构建一个私有继承 widget 的 [StatelessWidget]；
+/// [Theme.of] 会通过 [BuildContext.dependOnInheritedWidgetOfExactType]
+/// 查找该私有继承 widget，并返回其中的 [ThemeData]。
 ///
-/// ## Calling the `of` or `maybeOf` methods
+/// ## 调用 `of` 或 `maybeOf`
 ///
-/// When using the `of` or `maybeOf` methods, the `context` must be a descendant
-/// of the [InheritedWidget], meaning it must be "below" the [InheritedWidget]
-/// in the tree.
+/// 使用 `of` 或 `maybeOf` 时，传入的 `context` 必须是该 [InheritedWidget]
+/// 的后代，也就是说它在树中必须位于该继承 widget 之“下”。
 ///
 /// {@tool snippet}
 ///
-/// In this example, the `context` used is the one from the [Builder], which is
-/// a child of the `FrogColor` widget, so this works.
+/// 在此示例中，使用的是 [Builder] 提供的 `context`，它是 `FrogColor` 的子级，
+/// 因此可以正常工作。
 ///
 /// ```dart
-/// // continuing from previous example...
+/// // 承接前面的示例...
 /// class MyPage extends StatelessWidget {
 ///   const MyPage({super.key});
 ///
@@ -1653,9 +1637,9 @@ abstract class ParentDataWidget<T extends ParentData> extends ProxyWidget {
 ///
 /// {@tool snippet}
 ///
-/// In this example, the `context` used is the one from the `MyOtherPage`
-/// widget, which is a parent of the `FrogColor` widget, so this does not work,
-/// and will assert when `FrogColor.of` is called.
+/// 在此示例中，使用的是 `MyOtherPage` widget 的 `context`，
+/// 它是 `FrogColor` 的父级，因此此用法无效，
+/// 调用 `FrogColor.of` 时会触发断言。
 ///
 /// ```dart
 /// // continuing from previous example...
@@ -1679,18 +1663,13 @@ abstract class ParentDataWidget<T extends ParentData> extends ProxyWidget {
 /// ```
 /// {@end-tool} {@youtube 560 315 https://www.youtube.com/watch?v=1t-8rBCGBYw}
 ///
-/// See also:
+/// 另请参阅：
 ///
-/// * [StatefulWidget] and [State], for widgets that can build differently
-///   several times over their lifetime.
-/// * [StatelessWidget], for widgets that always build the same way given a
-///   particular configuration and ambient state.
-/// * [Widget], for an overview of widgets in general.
-/// * [InheritedNotifier], an inherited widget whose value can be a
-///   [Listenable], and which will notify dependents whenever the value sends
-///   notifications.
-/// * [InheritedModel], an inherited widget that allows clients to subscribe to
-///   changes for subparts of the value.
+/// * [StatefulWidget] 与 [State]，用于多次构建的 widget。
+/// * [StatelessWidget]，在给定配置和环境下始终构建相同内容的 widget。
+/// * [Widget]，了解 widget 的整体概念。
+/// * [InheritedNotifier]，其值为 [Listenable] 时会在通知时告知依赖者。
+/// * [InheritedModel]，允许依赖者仅订阅部分值变化的继承 widget。
 abstract class InheritedWidget extends ProxyWidget {
   /// Abstract const constructor. This constructor enables subclasses to provide
   /// const constructors so that they can be used in const expressions.
@@ -1699,18 +1678,14 @@ abstract class InheritedWidget extends ProxyWidget {
   @override
   InheritedElement createElement() => InheritedElement(this);
 
-  /// Whether the framework should notify widgets that inherit from this widget.
+  /// 框架是否应该通知继承了此 widget 的子孙重新构建。
   ///
-  /// When this widget is rebuilt, sometimes we need to rebuild the widgets that
-  /// inherit from this widget but sometimes we do not. For example, if the data
-  /// held by this widget is the same as the data held by `oldWidget`, then we
-  /// do not need to rebuild the widgets that inherited the data held by
-  /// `oldWidget`.
+  /// 当该 widget 重建时，有时需要重建所有依赖它的 widget，有时又不必。例如
+  /// 如果此 widget 持有的数据与 `oldWidget` 持有的数据相同，就无需重建依赖
+  /// `oldWidget` 的 widget。
   ///
-  /// The framework distinguishes these cases by calling this function with the
-  /// widget that previously occupied this location in the tree as an argument.
-  /// The given widget is guaranteed to have the same [runtimeType] as this
-  /// object.
+  /// 框架通过将先前位于此位置的 widget 作为参数调用此函数来区分上述情况。
+  /// 传入的 widget 与当前对象具有相同的 [runtimeType]。
   @protected
   bool updateShouldNotify(covariant InheritedWidget oldWidget);
 }
@@ -1968,53 +1943,44 @@ class _InactiveElements {
   }
 }
 
-/// Signature for the callback to [BuildContext.visitChildElements].
-///
-/// The argument is the child being visited.
-///
-/// It is safe to call `element.visitChildElements` reentrantly within
-/// this callback.
+  /// [BuildContext.visitChildElements] 回调的签名。
+  ///
+  /// 参数为正在被访问的子元素。
+  ///
+  /// 在此回调中可安全地再次调用 `element.visitChildElements`。
 typedef ElementVisitor = void Function(Element element);
 
-/// Signature for the callback to [BuildContext.visitAncestorElements].
-///
-/// The argument is the ancestor being visited.
-///
-/// Return false to stop the walk.
+  /// [BuildContext.visitAncestorElements] 回调的签名。
+  ///
+  /// 参数为正在被访问的祖先元素。
+  ///
+  /// 返回 false 可停止继续遍历。
 typedef ConditionalElementVisitor = bool Function(Element element);
 
-/// A handle to the location of a widget in the widget tree.
+/// 表示 widget 在树中位置的句柄。
 ///
-/// This class presents a set of methods that can be used from
-/// [StatelessWidget.build] methods and from methods on [State] objects.
+/// 该类提供一组方法，可在 [StatelessWidget.build] 或 [State] 的方法中使用。
 ///
-/// [BuildContext] objects are passed to [WidgetBuilder] functions (such as
-/// [StatelessWidget.build]), and are available from the [State.context] member.
-/// Some static functions (e.g. [showDialog], [Theme.of], and so forth) also
-/// take build contexts so that they can act on behalf of the calling widget, or
-/// obtain data specifically for the given context.
+/// [BuildContext] 会传递给 [WidgetBuilder]（如 [StatelessWidget.build]），
+/// 也可通过 [State.context] 获取。部分静态函数（如 [showDialog]、[Theme.of] 等）
+/// 也接收 context 参数，以便代表调用 widget 操作，或获得与该 context 相关的数据。
 ///
-/// Each widget has its own [BuildContext], which becomes the parent of the
-/// widget returned by the [StatelessWidget.build] or [State.build] function.
-/// (And similarly, the parent of any children for [RenderObjectWidget]s.)
+/// 每个 widget 都有自己的 [BuildContext]，它将成为 [StatelessWidget.build]
+/// 或 [State.build] 返回的 widget 的父级，同样也是任何 [RenderObjectWidget]
+/// 子节点的父级。
 ///
-/// In particular, this means that within a build method, the build context of
-/// the widget of the build method is not the same as the build context of the
-/// widgets returned by that build method. This can lead to some tricky cases.
-/// For example, [Theme.of(context)] looks for the nearest enclosing [Theme] of
-/// the given build context. If a build method for a widget Q includes a [Theme]
-/// within its returned widget tree, and attempts to use [Theme.of] passing its
-/// own context, the build method for Q will not find that [Theme] object. It
-/// will instead find whatever [Theme] was an ancestor to the widget Q. If the
-/// build context for a subpart of the returned tree is needed, a [Builder]
-/// widget can be used: the build context passed to the [Builder.builder]
-/// callback will be that of the [Builder] itself.
+/// 这意味着在一次构建方法内部，当前 widget 的构建上下文与其返回的
+/// 子 widget 的构建上下文并不相同，这可能导致一些棘手问题。
+/// 例如，调用 [Theme.of(context)] 会查找给定上下文最近的 [Theme]。
+/// 如果 widget Q 的构建方法在其返回的子树中包含了 [Theme]，
+/// 却在自身上下文上调用 [Theme.of]，则无法找到刚插入的 [Theme]，
+/// 只会找到 Q 以上最近的祖先 [Theme]。若需要获取返回树中特定部分的
+/// 构建上下文，可使用 [Builder]，它的 [Builder.builder] 回调
+/// 会提供 [Builder] 自身的上下文。
 ///
-/// For example, in the following snippet, the [ScaffoldState.showBottomSheet]
-/// method is called on the [Scaffold] widget that the build method itself
-/// creates. If a [Builder] had not been used, and instead the `context`
-/// argument of the build method itself had been used, no [Scaffold] would have
-/// been found, and the [Scaffold.of] function would have returned null.
+/// 例如，下面的代码在构建方法创建的 [Scaffold] 上调用
+/// [ScaffoldState.showBottomSheet]。若未使用 [Builder]，直接使用
+/// 构建方法自身的 `context`，将找不到 [Scaffold]，`Scaffold.of` 会返回 null。
 ///
 /// ```dart
 /// @override
