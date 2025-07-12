@@ -1001,13 +1001,11 @@ abstract class State<T extends StatefulWidget> with Diagnosticable {
   /// }
   /// ```
   ///
-  /// Sometimes, the changed state is in some other object not owned by the
-  /// widget [State], but the widget nonetheless needs to be updated to react to
-  /// the new state. This is especially common with [Listenable]s, such as
-  /// [AnimationController]s.
+  /// 有时，发生变化的状态位于该 widget 的 [State] 之外的对象中，
+  /// 但 widget 仍需更新以响应新的状态。这在使用 [Listenable]
+  ///（例如 [AnimationController]）时尤为常见。
   ///
-  /// In such cases, it is good practice to leave a comment in the callback
-  /// passed to [setState] that explains what state changed:
+  /// 在这种情况下，最好在传递给 [setState] 的回调中写明状态变更的原因：
   ///
   /// ```dart
   /// void _update() {
@@ -1017,57 +1015,47 @@ abstract class State<T extends StatefulWidget> with Diagnosticable {
   /// animation.addListener(_update);
   /// ```
   ///
-  /// It is an error to call this method after the framework calls [dispose].
-  /// You can determine whether it is legal to call this method by checking
-  /// whether the [mounted] property is true. That said, it is better practice
-  /// to cancel whatever work might trigger the [setState] rather than merely
-  /// checking for [mounted] before calling [setState], as otherwise CPU cycles
-  /// will be wasted.
+  /// 在框架调用 [dispose] 之后再调用此方法是错误的。
+  /// 是否可以调用此方法可以通过检查 [mounted] 属性来确定。
+  /// 但更好的做法是取消可能触发 [setState] 的工作，
+  /// 而不是仅在调用前检查 [mounted]，否则会浪费 CPU 周期。
   ///
-  /// ## Design discussion
+  /// ## 设计讨论
   ///
-  /// The original version of this API was a method called `markNeedsBuild`, for
-  /// consistency with [RenderObject.markNeedsLayout],
-  /// [RenderObject.markNeedsPaint], _et al_.
+  /// 此 API 的最初版本名为 `markNeedsBuild`，
+  /// 以与 [RenderObject.markNeedsLayout]、
+  /// [RenderObject.markNeedsPaint] 等保持一致。
   ///
-  /// However, early user testing of the Flutter framework revealed that people
-  /// would call `markNeedsBuild()` much more often than necessary. Essentially,
-  /// people used it like a good luck charm, any time they weren't sure if they
-  /// needed to call it, they would call it, just in case.
+  /// 然而早期的用户测试表明，开发者会在很多情况下不必要地调用 `markNeedsBuild()`。
+  /// 基本上，他们把它当成“护身符”，只要不确定是否需要调用就会调用。
   ///
-  /// Naturally, this led to performance issues in applications.
+  /// 这自然导致了应用性能问题。
   ///
-  /// When the API was changed to take a callback instead, this practice was
-  /// greatly reduced. One hypothesis is that prompting developers to actually
-  /// update their state in a callback caused developers to think more carefully
-  /// about what exactly was being updated, and thus improved their understanding
-  /// of the appropriate times to call the method.
+  /// 当 API 改为接收回调函数后，这种现象大幅减少。
+  /// 一个猜想是，要求开发者在回调中实际更新状态，
+  /// 促使他们更谨慎地思考究竟更新了什么，
+  /// 因而更好地理解了调用该方法的合适时机。
   ///
-  /// In practice, the [setState] method's implementation is trivial: it calls
-  /// the provided callback synchronously, then calls [Element.markNeedsBuild].
+  /// 实际上，[setState] 的实现很简单：同步调用提供的回调，
+  /// 然后调用 [Element.markNeedsBuild]。
   ///
-  /// ## Performance considerations
+  /// ## 性能考虑
   ///
-  /// There is minimal _direct_ overhead to calling this function, and as it is
-  /// expected to be called at most once per frame, the overhead is irrelevant
-  /// anyway. Nonetheless, it is best to avoid calling this function redundantly
-  /// (e.g. in a tight loop), as it does involve creating a closure and calling
-  /// it. The method is idempotent, there is no benefit to calling it more than
-  /// once per [State] per frame.
+  /// 调用此函数本身几乎没有开销，并且预期每帧最多调用一次，
+  /// 其开销可忽略不计。尽管如此，仍应避免在循环等情况下反复调用，
+  /// 因为它需要创建并执行闭包。该方法具备幂等性，
+  /// 每帧在同一 [State] 上多次调用不会带来任何好处。
   ///
-  /// The _indirect_ cost of causing this function, however, is high: it causes
-  /// the widget to rebuild, possibly triggering rebuilds for the entire subtree
-  /// rooted at this widget, and further triggering a relayout and repaint of
-  /// the entire corresponding [RenderObject] subtree.
+  /// 然而其 _间接_ 成本很高：它会导致该 widget 重新构建，
+  /// 可能进一步触发以此 widget 为根的整个子树的重建，
+  /// 以及相应 [RenderObject] 子树的重新布局和绘制。
   ///
-  /// For this reason, this method should only be called when the [build] method
-  /// will, as a result of whatever state change was detected, change its result
-  /// meaningfully.
+  /// 因此，只有在状态变化会实质性地影响 [build] 方法的结果时，
+  /// 才应调用此方法。
   ///
-  /// See also:
+  /// 另请参阅：
   ///
-  ///  * [StatefulWidget], the API documentation for which has a section on
-  ///    performance considerations that are relevant here.
+  ///  * [StatefulWidget]，其文档中有一节与此相关的性能注意事项。
   @protected
   void setState(VoidCallback fn) {
     assert(() {
@@ -1131,116 +1119,92 @@ abstract class State<T extends StatefulWidget> with Diagnosticable {
     _element!.markNeedsBuild();
   }
 
-  /// Called when this object is removed from the tree.
+  /// 当该对象从树中移除时调用。
   ///
-  /// The framework calls this method whenever it removes this [State] object
-  /// from the tree. In some cases, the framework will reinsert the [State]
-  /// object into another part of the tree (e.g., if the subtree containing this
-  /// [State] object is grafted from one location in the tree to another due to
-  /// the use of a [GlobalKey]). If that happens, the framework will call
-  /// [activate] to give the [State] object a chance to reacquire any resources
-  /// that it released in [deactivate]. It will then also call [build] to give
-  /// the [State] object a chance to adapt to its new location in the tree. If
-  /// the framework does reinsert this subtree, it will do so before the end of
-  /// the animation frame in which the subtree was removed from the tree. For
-  /// this reason, [State] objects can defer releasing most resources until the
-  /// framework calls their [dispose] method.
+  /// 每当框架将此 [State] 对象从树中移除时都会调用此方法。
+  /// 在某些情况下，框架会将该对象重新插入树中的其他位置
+  ///（例如由于使用 [GlobalKey]，包含此 [State] 对象的子树从一个位置
+  /// 移植到另一个位置）。如果发生这种情况，框架会调用 [activate]
+  /// 让 [State] 有机会重新获取在 [deactivate] 中释放的资源，
+  /// 然后再调用 [build]，使其能够适应新的树位置。
+  /// 如果框架重新插入该子树，会在其被移除的同一动画帧结束前完成。
+  /// 因此，通常可以推迟释放大部分资源，直到框架调用 [dispose]。
   ///
-  /// Subclasses should override this method to clean up any links between
-  /// this object and other elements in the tree (e.g. if you have provided an
-  /// ancestor with a pointer to a descendant's [RenderObject]).
+  /// 子类应该重写此方法，以清理该对象与树中其他元素之间的任何连接
+  ///（例如曾经向祖先提供指向后代 [RenderObject] 的指针）。
   ///
-  /// Implementations of this method should end with a call to the inherited
-  /// method, as in `super.deactivate()`.
+  /// 实现此方法时应在末尾调用父类实现，如 `super.deactivate()`。
   ///
-  /// See also:
+  /// 另请参阅：
   ///
-  ///  * [dispose], which is called after [deactivate] if the widget is removed
-  ///    from the tree permanently.
+  ///  * [dispose]，若 widget 被永久移除，则在 [deactivate] 之后调用。
   @protected
   @mustCallSuper
   void deactivate() {}
 
-  /// Called when this object is reinserted into the tree after having been
-  /// removed via [deactivate].
+  /// 当该对象在经过 [deactivate] 移除后重新插入树中时调用。
   ///
-  /// In most cases, after a [State] object has been deactivated, it is _not_
-  /// reinserted into the tree, and its [dispose] method will be called to
-  /// signal that it is ready to be garbage collected.
+  /// 在大多数情况下，[State] 一旦被停用就不会再被插入树中，
+  /// 它的 [dispose] 方法将被调用以通知可以被垃圾回收。
   ///
-  /// In some cases, however, after a [State] object has been deactivated, the
-  /// framework will reinsert it into another part of the tree (e.g., if the
-  /// subtree containing this [State] object is grafted from one location in
-  /// the tree to another due to the use of a [GlobalKey]). If that happens,
-  /// the framework will call [activate] to give the [State] object a chance to
-  /// reacquire any resources that it released in [deactivate]. It will then
-  /// also call [build] to give the object a chance to adapt to its new
-  /// location in the tree. If the framework does reinsert this subtree, it
-  /// will do so before the end of the animation frame in which the subtree was
-  /// removed from the tree. For this reason, [State] objects can defer
-  /// releasing most resources until the framework calls their [dispose] method.
+  /// 但有时，在停用后框架会将 [State] 重新插入树的其他位置
+  ///（例如使用 [GlobalKey] 从一个位置移植到另一个位置）。
+  /// 这时框架会先调用 [activate]，让该对象重新获取在
+  /// [deactivate] 中释放的资源，然后调用 [build]，
+  /// 使其适应新的树位置。如果框架要重新插入该子树，
+  /// 会在移除它的同一帧结束前完成。 因此 [State] 可以推迟释放
+  /// 大部分资源，直到框架调用 [dispose]。
   ///
-  /// The framework does not call this method the first time a [State] object
-  /// is inserted into the tree. Instead, the framework calls [initState] in
-  /// that situation.
+  /// 第一次将 [State] 插入树时不会调用此方法，
+  /// 当时框架会调用 [initState]。
   ///
-  /// Implementations of this method should start with a call to the inherited
-  /// method, as in `super.activate()`.
+  /// 实现此方法时应首先调用父类方法，如 `super.activate()`。
   ///
-  /// See also:
+  /// 另请参阅：
   ///
-  ///  * [Element.activate], the corresponding method when an element
-  ///    transitions from the "inactive" to the "active" lifecycle state.
+  ///  * [Element.activate]，元素从“inactive”过渡到“active”状态时对应的方法。
   @protected
   @mustCallSuper
   void activate() {}
 
-  /// Called when this object is removed from the tree permanently.
+  /// 当该对象永久从树中移除时调用。
   ///
-  /// The framework calls this method when this [State] object will never
-  /// build again. After the framework calls [dispose], the [State] object is
-  /// considered unmounted and the [mounted] property is false. It is an error
-  /// to call [setState] at this point. This stage of the lifecycle is terminal:
-  /// there is no way to remount a [State] object that has been disposed.
+  /// 框架在此 [State] 对象不再构建时调用此方法。调用 [dispose] 后，
+  /// 该对象被视为未挂载，其 [mounted] 属性为 false，此时再调用 [setState]
+  /// 会导致错误。此阶段是终点，已被销毁的 [State] 无法重新挂载。
   ///
-  /// Subclasses should override this method to release any resources retained
-  /// by this object (e.g., stop any active animations).
+  /// 子类应在此方法中释放该对象持有的任何资源（例如停止动画）。
   ///
   /// {@macro flutter.widgets.State.initState}
   ///
-  /// Implementations of this method should end with a call to the inherited
-  /// method, as in `super.dispose()`.
+  /// 实现此方法时应在末尾调用父类实现，如 `super.dispose()`。
   ///
-  /// ## Caveats
+  /// ## 注意
   ///
-  /// This method is _not_ invoked at times where a developer might otherwise
-  /// expect it, such as application shutdown or dismissal via platform
-  /// native methods.
+  /// 此方法不会在开发者可能期望的某些时机被调用，
+  /// 例如应用退出或通过平台方法关闭等。
   ///
-  /// ### Application shutdown
+  /// ### 应用关闭
   ///
-  /// There is no way to predict when application shutdown will happen. For
-  /// example, a user's battery could catch fire, or the user could drop the
-  /// device into a swimming pool, or the operating system could unilaterally
-  /// terminate the application process due to memory pressure.
+  /// 无法预测应用何时会关闭。比如电池故障、设备落水，或操作系统因内存
+  /// 压力而强制终止进程等。
   ///
-  /// Applications are responsible for ensuring that they are well-behaved
-  /// even in the face of a rapid unscheduled termination.
+  /// 应用自身应确保即便遭遇突发终止也能正确处理。
   ///
-  /// To artificially cause the entire widget tree to be disposed, consider
-  /// calling [runApp] with a widget such as [SizedBox.shrink].
+  /// 如需主动销毁整个 widget 树，可调用 [runApp] 并提供诸如
+  /// [SizedBox.shrink] 之类的 widget。
   ///
-  /// To listen for platform shutdown messages (and other lifecycle changes),
-  /// consider the [AppLifecycleListener] API.
+  /// 若要监听平台的关闭消息（及其他生命周期变化），可使用
+  /// [AppLifecycleListener] API。
   ///
   /// {@macro flutter.widgets.runApp.dismissal}
   ///
-  /// See the method used to bootstrap the app (e.g. [runApp] or [runWidget])
-  /// for suggestions on how to release resources more eagerly.
+  /// 参见启动应用的方法（例如 [runApp] 或 [runWidget]），了解如何更积极地
+  /// 释放资源。
   ///
-  /// See also:
+  /// 另请参阅：
   ///
-  ///  * [deactivate], which is called prior to [dispose].
+  ///  * [deactivate]，在 [dispose] 之前调用。
   @protected
   @mustCallSuper
   void dispose() {
@@ -1252,66 +1216,53 @@ abstract class State<T extends StatefulWidget> with Diagnosticable {
     assert(debugMaybeDispatchDisposed(this));
   }
 
-  /// Describes the part of the user interface represented by this widget.
+  /// 描述该 widget 所表示的用户界面部分。
   ///
-  /// The framework calls this method in a number of different situations. For
-  /// example:
+  /// 框架会在多种情况下调用此方法，例如：
   ///
-  ///  * After calling [initState].
-  ///  * After calling [didUpdateWidget].
-  ///  * After receiving a call to [setState].
-  ///  * After a dependency of this [State] object changes (e.g., an
-  ///    [InheritedWidget] referenced by the previous [build] changes).
-  ///  * After calling [deactivate] and then reinserting the [State] object into
-  ///    the tree at another location.
+  ///  * 调用 [initState] 之后；
+  ///  * 调用 [didUpdateWidget] 之后；
+  ///  * 收到 [setState] 调用之后；
+  ///  * 当该 [State] 的依赖项发生变化时（如先前 [build] 中引用的
+  ///    [InheritedWidget] 发生变化）；
+  ///  * 调用 [deactivate] 并重新将该 [State] 插入树中其他位置之后。
   ///
-  /// This method can potentially be called in every frame and should not have
-  /// any side effects beyond building a widget.
+  /// 此方法可能在每一帧都被调用，且不应产生除构建 widget 外的任何副作用。
   ///
-  /// The framework replaces the subtree below this widget with the widget
-  /// returned by this method, either by updating the existing subtree or by
-  /// removing the subtree and inflating a new subtree, depending on whether the
-  /// widget returned by this method can update the root of the existing
-  /// subtree, as determined by calling [Widget.canUpdate].
+  /// 框架会用此方法返回的 widget 替换该 widget 以下的子树，
+  /// 具体是更新现有子树还是移除并重新构建，取决于该返回的 widget
+  /// 是否可以更新现有子树的根（由 [Widget.canUpdate] 决定）。
   ///
-  /// Typically implementations return a newly created constellation of widgets
-  /// that are configured with information from this widget's constructor, the
-  /// given [BuildContext], and the internal state of this [State] object.
+  /// 通常实现会返回一组新创建的 widget，
+  /// 这些 widget 使用构造函数信息、给定的 [BuildContext]
+  /// 以及此 [State] 的内部状态进行配置。
   ///
-  /// The given [BuildContext] contains information about the location in the
-  /// tree at which this widget is being built. For example, the context
-  /// provides the set of inherited widgets for this location in the tree. The
-  /// [BuildContext] argument is always the same as the [context] property of
-  /// this [State] object and will remain the same for the lifetime of this
-  /// object. The [BuildContext] argument is provided redundantly here so that
-  /// this method matches the signature for a [WidgetBuilder].
+  /// 提供的 [BuildContext] 包含此 widget 构建位置的相关信息，
+  /// 例如该位置可获取的继承 widget 集合。
+  /// 此参数始终与该对象的 [context] 属性相同，且在对象生命周期内保持不变，
+  /// 在这里冗余提供是为了让此方法符合 [WidgetBuilder] 的签名。
   ///
-  /// ## Design discussion
+  /// ## 设计讨论
   ///
-  /// ### Why is the [build] method on [State], and not [StatefulWidget]?
+  /// ### 为什么 [build] 方法在 [State] 上，而不是 [StatefulWidget]？
   ///
-  /// Putting a `Widget build(BuildContext context)` method on [State] rather
-  /// than putting a `Widget build(BuildContext context, State state)` method
-  /// on [StatefulWidget] gives developers more flexibility when subclassing
-  /// [StatefulWidget].
+  /// 将 `Widget build(BuildContext context)` 方法放在 [State] 上，
+  /// 而不是放在 `StatefulWidget` 上并额外传入 `State state` 参数，
+  /// 可以让开发者在继承 [StatefulWidget] 时拥有更大的灵活性。
   ///
-  /// For example, [AnimatedWidget] is a subclass of [StatefulWidget] that
-  /// introduces an abstract `Widget build(BuildContext context)` method for its
-  /// subclasses to implement. If [StatefulWidget] already had a [build] method
-  /// that took a [State] argument, [AnimatedWidget] would be forced to provide
-  /// its [State] object to subclasses even though its [State] object is an
-  /// internal implementation detail of [AnimatedWidget].
+  /// 例如，[AnimatedWidget] 是 [StatefulWidget] 的子类，
+  /// 它定义了一个抽象的 `Widget build(BuildContext context)` 方法供子类实现。
+  /// 如果 [StatefulWidget] 已经拥有一个接收 [State] 参数的 [build] 方法，
+  /// 那么 [AnimatedWidget] 就不得不将其 [State] 对象暴露给子类，
+  /// 尽管该对象只是 [AnimatedWidget] 的内部实现细节。
   ///
-  /// Conceptually, [StatelessWidget] could also be implemented as a subclass of
-  /// [StatefulWidget] in a similar manner. If the [build] method were on
-  /// [StatefulWidget] rather than [State], that would not be possible anymore.
+  /// 从概念上讲，[StatelessWidget] 也可以以类似方式实现为 [StatefulWidget]
+  /// 的子类。如果 [build] 方法定义在 [StatefulWidget] 而不是 [State] 上，
+  /// 这种实现将不再可能。
   ///
-  /// Putting the [build] function on [State] rather than [StatefulWidget] also
-  /// helps avoid a category of bugs related to closures implicitly capturing
-  /// `this`. If you defined a closure in a [build] function on a
-  /// [StatefulWidget], that closure would implicitly capture `this`, which is
-  /// the current widget instance, and would have the (immutable) fields of that
-  /// instance in scope:
+  /// 将 [build] 函数放在 [State] 上还可以避免闭包隐式捕获 `this`
+  /// 所导致的一类 bug。如果在 [StatefulWidget] 的 [build] 函数中定义闭包，
+  /// 该闭包会隐式捕获当前 widget 实例 `this`，并持有其中的（不可变）字段：
   ///
   /// ```dart
   /// // (this is not valid Flutter code)
@@ -1329,17 +1280,13 @@ abstract class State<T extends StatefulWidget> with Diagnosticable {
   /// }
   /// ```
   ///
-  /// For example, suppose the parent builds `MyButton` with `color` being blue,
-  /// the `$color` in the print function refers to blue, as expected. Now,
-  /// suppose the parent rebuilds `MyButton` with green. The closure created by
-  /// the first build still implicitly refers to the original widget and the
-  /// `$color` still prints blue even through the widget has been updated to
-  /// green; should that closure outlive its widget, it would print outdated
-  /// information.
+  /// 例如，父级构建 `MyButton` 时传入蓝色 `color`，
+  /// 闭包中的 `$color` 会打印蓝色。这时如果父级重新构建 `MyButton` 并传入绿色，
+  /// 首次构建产生的闭包仍隐式指向原来的 widget，
+  /// `$color` 依旧打印蓝色；如果闭包生命周期长于 widget，便会输出过时信息。
   ///
-  /// In contrast, with the [build] function on the [State] object, closures
-  /// created during [build] implicitly capture the [State] instance instead of
-  /// the widget instance:
+  /// 相反，当 [build] 函数位于 [State] 上时，
+  /// 在 [build] 过程中创建的闭包会隐式捕获 [State] 实例，而非 widget 实例：
   ///
   /// ```dart
   /// class MyButton extends StatefulWidget {
@@ -1360,32 +1307,27 @@ abstract class State<T extends StatefulWidget> with Diagnosticable {
   /// }
   /// ```
   ///
-  /// Now when the parent rebuilds `MyButton` with green, the closure created by
-  /// the first build still refers to [State] object, which is preserved across
-  /// rebuilds, but the framework has updated that [State] object's [widget]
-  /// property to refer to the new `MyButton` instance and `${widget.color}`
-  /// prints green, as expected.
+  /// 当父级再次以绿色重建 `MyButton` 时，首次构建的闭包仍指向同一个 [State]
+  /// 对象，该对象在重建间保留，但框架已将其 [widget] 属性更新为新的
+  /// `MyButton` 实例，因此 `${widget.color}` 会按预期打印绿色。
   ///
-  /// See also:
+  /// 另请参阅：
   ///
-  ///  * [StatefulWidget], which contains the discussion on performance considerations.
+  ///  * [StatefulWidget]，其中包含关于性能注意事项的讨论。
   @protected
   Widget build(BuildContext context);
 
-  /// Called when a dependency of this [State] object changes.
+  /// 当此 [State] 对象的依赖发生变化时调用。
   ///
-  /// For example, if the previous call to [build] referenced an
-  /// [InheritedWidget] that later changed, the framework would call this
-  /// method to notify this object about the change.
+  /// 例如，若上一次 [build] 调用了某个 [InheritedWidget]，
+  /// 而该 widget 之后发生了变化，框架会调用此方法以通知该对象。
   ///
-  /// This method is also called immediately after [initState]. It is safe to
-  /// call [BuildContext.dependOnInheritedWidgetOfExactType] from this method.
+  /// 此方法也会在 [initState] 之后立即被调用。
+  /// 在该方法中调用 [BuildContext.dependOnInheritedWidgetOfExactType] 是安全的。
   ///
-  /// Subclasses rarely override this method because the framework always
-  /// calls [build] after a dependency changes. Some subclasses do override
-  /// this method because they need to do some expensive work (e.g., network
-  /// fetches) when their dependencies change, and that work would be too
-  /// expensive to do for every build.
+  /// 子类很少重写此方法，因为依赖发生变化后框架总会调用 [build]。
+  /// 只有在依赖变化时需要执行较耗时的操作（例如网络请求），
+  /// 且不适合在每次构建时都执行时，才会重写此方法。
   @protected
   @mustCallSuper
   void didChangeDependencies() {}
@@ -1413,24 +1355,18 @@ abstract class State<T extends StatefulWidget> with Diagnosticable {
   // updated accordingly (dev/bots/custom_rules/protect_public_state_subtypes.dart)
 }
 
-/// A widget that has a child widget provided to it, instead of building a new
-/// widget.
+/// 一个拥有子 widget 的容器，而非自行构建新 widget。
 ///
-/// Useful as a base class for other widgets, such as [InheritedWidget] and
-/// [ParentDataWidget].
+/// 可作为其他 widget（如 [InheritedWidget]、[ParentDataWidget]）的基类。
 ///
-/// See also:
+/// 另请参阅：
 ///
-///  * [InheritedWidget], for widgets that introduce ambient state that can
-///    be read by descendant widgets.
-///  * [ParentDataWidget], for widgets that populate the
-///    [RenderObject.parentData] slot of their child's [RenderObject] to
-///    configure the parent widget's layout.
-///  * [StatefulWidget] and [State], for widgets that can build differently
-///    several times over their lifetime.
-///  * [StatelessWidget], for widgets that always build the same way given a
-///    particular configuration and ambient state.
-///  * [Widget], for an overview of widgets in general.
+///  * [InheritedWidget]，用于引入可供后代读取的环境状态的 widget；
+///  * [ParentDataWidget]，用于填充子节点 [RenderObject.parentData]
+///    以配置父 widget 布局；
+///  * [StatefulWidget] 和 [State]，用于在生命周期内可多次构建的 widget；
+///  * [StatelessWidget]，用于在给定配置和环境状态下始终以相同方式构建的 widget；
+///  * [Widget]，了解关于 widget 的概述。
 abstract class ProxyWidget extends Widget {
   /// Creates a widget that has exactly one child widget.
   const ProxyWidget({super.key, required this.child});
@@ -1486,61 +1422,54 @@ abstract class ProxyWidget extends Widget {
 /// ```
 /// {@end-tool}
 ///
-/// See also:
+/// 另请参阅：
 ///
-///  * [RenderObject], the superclass for layout algorithms.
-///  * [RenderObject.parentData], the slot that this class configures.
-///  * [ParentData], the superclass of the data that will be placed in
-///    [RenderObject.parentData] slots. The `T` type parameter for
-///    [ParentDataWidget] is a [ParentData].
-///  * [RenderObjectWidget], the class for widgets that wrap [RenderObject]s.
-///  * [StatefulWidget] and [State], for widgets that can build differently
-///    several times over their lifetime.
+///  * [RenderObject]，布局算法的基类；
+///  * [RenderObject.parentData]，由此类配置的槽位；
+///  * [ParentData]，其 `T` 类型参数即为 [ParentData]；
+///  * [RenderObjectWidget]，包装 [RenderObject] 的 widget 类；
+///  * [StatefulWidget] 和 [State]，可以在生命周期内多次构建的 widget。
 abstract class ParentDataWidget<T extends ParentData> extends ProxyWidget {
-  /// Abstract const constructor. This constructor enables subclasses to provide
-  /// const constructors so that they can be used in const expressions.
+  /// 抽象 const 构造函数，使得子类可以拥有 const 构造函数，
+  /// 以便在 const 表达式中使用。
   const ParentDataWidget({super.key, required super.child});
 
   @override
   ParentDataElement<T> createElement() => ParentDataElement<T>(this);
 
-  /// Checks if this widget can apply its parent data to the provided
-  /// `renderObject`.
+  /// 检查此 widget 是否能将父数据应用于给定的 `renderObject`。
   ///
-  /// The [RenderObject.parentData] of the provided `renderObject` is
-  /// typically set up by an ancestor [RenderObjectWidget] of the type returned
-  /// by [debugTypicalAncestorWidgetClass].
+  /// 提供的 `renderObject` 的 [RenderObject.parentData] 通常由
+  /// [debugTypicalAncestorWidgetClass] 指定类型的祖先 [RenderObjectWidget]
+  /// 进行初始化。
   ///
-  /// This is called just before [applyParentData] is invoked with the same
-  /// [RenderObject] provided to that method.
+  /// 该方法在调用 [applyParentData] 之前被触发，
+  /// 当时会传入同一个 [RenderObject]。
   bool debugIsValidRenderObject(RenderObject renderObject) {
     assert(T != dynamic);
     assert(T != ParentData);
     return renderObject.parentData is T;
   }
 
-  /// Describes the [RenderObjectWidget] that is typically used to set up the
-  /// [ParentData] that [applyParentData] will write to.
+  /// 描述通常用于设置 [applyParentData] 将写入的 [ParentData] 的
+  /// [RenderObjectWidget] 类型。
   ///
-  /// This is only used in error messages to tell users what widget typically
-  /// wraps this [ParentDataWidget] through
-  /// [debugTypicalAncestorWidgetDescription].
+  /// 仅在错误信息中使用，通过 [debugTypicalAncestorWidgetDescription]
+  /// 告知用户哪个 widget 通常会包裹此 [ParentDataWidget]。
   ///
   /// ## Implementations
   ///
   /// The returned Type should describe a subclass of `RenderObjectWidget`. If
-  /// more than one Type is supported, use
-  /// [debugTypicalAncestorWidgetDescription], which typically inserts this
-  /// value but can be overridden to describe more than one Type.
+  /// 如果支持多种类型，请使用 [debugTypicalAncestorWidgetDescription]，
+  /// 该方法通常插入此值，但可重写以描述多种有效父类型。
   ///
   /// ```dart
   ///   @override
   ///   Type get debugTypicalAncestorWidgetClass => FrogJar;
   /// ```
   ///
-  /// If the "typical" parent is generic (`Foo<T>`), consider specifying either
-  /// a typical type argument (e.g. `Foo<int>` if `int` is typically how the
-  /// type is specialized), or specifying the upper bound (e.g. `Foo<Object?>`).
+  /// 若“典型”父级是泛型（如 `Foo<T>`），可考虑指定常见的类型参数
+  ///（例如一般使用 `int` 时写成 `Foo<int>`），或指定其上界（如 `Foo<Object?>`）。
   Type get debugTypicalAncestorWidgetClass;
 
   /// Describes the [RenderObjectWidget] that is typically used to set up the
@@ -1549,8 +1478,8 @@ abstract class ParentDataWidget<T extends ParentData> extends ProxyWidget {
   /// This is only used in error messages to tell users what widget typically
   /// wraps this [ParentDataWidget].
   ///
-  /// Returns [debugTypicalAncestorWidgetClass] by default as a String. This can
-  /// be overridden to describe more than one Type of valid parent.
+  /// 默认返回 [debugTypicalAncestorWidgetClass] 的字符串形式，
+  /// 可重写以描述多个有效的父类型。
   String get debugTypicalAncestorWidgetDescription => '$debugTypicalAncestorWidgetClass';
 
   Iterable<DiagnosticsNode> _debugDescribeIncorrectParentDataType({
