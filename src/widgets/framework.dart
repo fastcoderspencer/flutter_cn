@@ -2024,19 +2024,16 @@ typedef ConditionalElementVisitor = bool Function(Element element);
 /// }
 /// ```
 ///
-/// The [BuildContext] for a particular widget can change location over time as
-/// the widget is moved around the tree. Because of this, values returned from
-/// the methods on this class should not be cached beyond the execution of a
-/// single synchronous function.
+/// 随着 widget 在树中移动，特定 widget 的 [BuildContext] 可能会改变位置。
+/// 因此，从此类方法返回的值不应在单次同步函数执行之外缓存。
 ///
 /// {@youtube 560 315 https://www.youtube.com/watch?v=rIaaH87z1-g}
 ///
-/// Avoid storing instances of [BuildContext]s because they may become invalid
-/// if the widget they are associated with is unmounted from the widget tree.
+/// 避免存储 [BuildContext] 实例，因为当其关联的 widget 从树中卸载时，
+/// 这些实例可能会失效。
 /// {@template flutter.widgets.BuildContext.asynchronous_gap}
-/// If a [BuildContext] is used across an asynchronous gap (i.e. after performing
-/// an asynchronous operation), consider checking [mounted] to determine whether
-/// the context is still valid before interacting with it:
+/// 如果在异步间隙（例如执行异步操作后）使用 [BuildContext]，在交互前请考虑
+/// 检查 [mounted] 以确定该上下文是否仍然有效：
 ///
 /// ```dart
 ///   @override
@@ -2054,89 +2051,68 @@ typedef ConditionalElementVisitor = bool Function(Element element);
 /// ```
 /// {@endtemplate}
 ///
-/// [BuildContext] objects are actually [Element] objects. The [BuildContext]
-/// interface is used to discourage direct manipulation of [Element] objects.
+/// [BuildContext] 实际上就是 [Element] 对象，该接口存在是为了避免直接
+/// 操作 [Element]。
 abstract class BuildContext {
   /// The current configuration of the [Element] that is this [BuildContext].
   Widget get widget;
 
-  /// The [BuildOwner] for this context. The [BuildOwner] is in charge of
-  /// managing the rendering pipeline for this context.
+  /// 该上下文所属的 [BuildOwner]，负责管理与此上下文有关的渲染管线。
   BuildOwner? get owner;
 
-  /// Whether the [Widget] this context is associated with is currently
-  /// mounted in the widget tree.
+  /// 此上下文关联的 [Widget] 当前是否挂载在组件树中。
   ///
-  /// Accessing the properties of the [BuildContext] or calling any methods on
-  /// it is only valid while mounted is true. If mounted is false, assertions
-  /// will trigger.
+  /// 只有当 mounted 为 true 时，访问 [BuildContext] 的属性或调用其方法才有效；
+  /// 若 mounted 为 false，将触发断言。
   ///
-  /// Once unmounted, a given [BuildContext] will never become mounted again.
+  /// 一旦被卸载，某个 [BuildContext] 将不会再次被挂载。
   ///
   /// {@macro flutter.widgets.BuildContext.asynchronous_gap}
   bool get mounted;
 
-  /// Whether the [widget] is currently updating the widget or render tree.
+  /// 当前 [widget] 是否正在更新 widget 树或渲染树。
   ///
-  /// For [StatefulWidget]s and [StatelessWidget]s this flag is true while
-  /// their respective build methods are executing.
-  /// [RenderObjectWidget]s set this to true while creating or configuring their
-  /// associated [RenderObject]s.
-  /// Other [Widget] types may set this to true for conceptually similar phases
-  /// of their lifecycle.
+  /// 对于 [StatefulWidget] 和 [StatelessWidget]，在其 build 方法执行期间该值为 true。
+  /// [RenderObjectWidget] 在创建或配置关联的 [RenderObject] 时也会将其设为 true。
+  /// 其他 [Widget] 类型在生命周期的类似阶段也可能会将其设为 true。
   ///
-  /// When this is true, it is safe for [widget] to establish a dependency to an
-  /// [InheritedWidget] by calling [dependOnInheritedElement] or
-  /// [dependOnInheritedWidgetOfExactType].
+  /// 当该值为 true 时，可安全地通过调用 [dependOnInheritedElement] 或
+  /// [dependOnInheritedWidgetOfExactType] 建立对某个 [InheritedWidget] 的依赖。
   ///
   /// Accessing this flag in release mode is not valid.
   bool get debugDoingBuild;
 
   /// The current [RenderObject] for the widget. If the widget is a
   /// [RenderObjectWidget], this is the render object that the widget created
-  /// for itself. Otherwise, it is the render object of the first descendant
-  /// [RenderObjectWidget].
+  /// 如果 widget 是 [RenderObjectWidget]，则返回它为自己创建的渲染对象；
+  /// 否则返回其第一个后代 [RenderObjectWidget] 的渲染对象。
   ///
-  /// This method will only return a valid result after the build phase is
-  /// complete. It is therefore not valid to call this from a build method.
-  /// It should only be called from interaction event handlers (e.g.
-  /// gesture callbacks) or layout or paint callbacks. It is also not valid to
-  /// call if [State.mounted] returns false.
+  /// 仅在构建阶段完成后，此方法才会返回有效结果，因此不能在 build 方法中调用。
+  /// 它只能在交互事件（如手势回调）或布局、绘制回调中使用；若 [State.mounted]
+  /// 为 false 也不能调用。
   ///
-  /// If the render object is a [RenderBox], which is the common case, then the
-  /// size of the render object can be obtained from the [size] getter. This is
-  /// only valid after the layout phase, and should therefore only be examined
-  /// from paint callbacks or interaction event handlers (e.g. gesture
-  /// callbacks).
+  /// 如果渲染对象是常见的 [RenderBox]，则可通过 [size] 获取其尺寸。此操作仅在
+  /// 布局阶段之后有效，因此应只在绘制回调或交互事件回调（如手势回调）中查看。
   ///
-  /// For details on the different phases of a frame, see the discussion at
-  /// [WidgetsBinding.drawFrame].
+  /// 有关帧各阶段的详细说明，请参阅 [WidgetsBinding.drawFrame]。
   ///
-  /// Calling this method is theoretically relatively expensive (O(N) in the
-  /// depth of the tree), but in practice is usually cheap because the tree
-  /// usually has many render objects and therefore the distance to the nearest
-  /// render object is usually short.
+  /// 此方法理论上开销与树的深度成 O(N) 关系，但实际通常较廉价，因为距离最近的
+  /// 渲染对象通常很近。
   RenderObject? findRenderObject();
 
-  /// The size of the [RenderBox] returned by [findRenderObject].
+  /// [findRenderObject] 返回的 [RenderBox] 的尺寸。
   ///
-  /// This getter will only return a valid result after the layout phase is
-  /// complete. It is therefore not valid to call this from a build method.
-  /// It should only be called from paint callbacks or interaction event
-  /// handlers (e.g. gesture callbacks).
+  /// 仅在布局阶段完成后此 getter 才会返回有效结果，因此不能在 build 方法中调
+  /// 用，只能在绘制回调或交互事件回调（如手势回调）中使用。
   ///
-  /// For details on the different phases of a frame, see the discussion at
-  /// [WidgetsBinding.drawFrame].
+  /// 有关帧不同阶段的详细信息，请参阅 [WidgetsBinding.drawFrame]。
   ///
-  /// This getter will only return a valid result if [findRenderObject] actually
-  /// returns a [RenderBox]. If [findRenderObject] returns a render object that
-  /// is not a subtype of [RenderBox] (e.g., [RenderView]), this getter will
-  /// throw an exception in debug mode and will return null in release mode.
+  /// 仅当 [findRenderObject] 实际返回 [RenderBox] 时此 getter 才有效。若返回
+  /// 的渲染对象不是 [RenderBox] 的子类（如 [RenderView]），该 getter 在调试
+  /// 模式下会抛出异常，在发布模式下则返回 null。
   ///
-  /// Calling this getter is theoretically relatively expensive (O(N) in the
-  /// depth of the tree), but in practice is usually cheap because the tree
-  /// usually has many render objects and therefore the distance to the nearest
-  /// render object is usually short.
+  /// 理论上，此 getter 的开销与树的深度成 O(N) 关系，但实际上通常较低，因为
+  /// 树中通常有很多渲染对象，所以离最近渲染对象的距离通常很短。
   Size? get size;
 
   /// Registers this build context with [ancestor] such that when
@@ -2169,55 +2145,43 @@ abstract class BuildContext {
   /// [State.initState] methods, because those methods would not get called
   /// again if the inherited value were to change. To ensure that the widget
   /// correctly updates itself when the inherited value changes, only call this
-  /// (directly or indirectly) from build methods, layout and paint callbacks,
-  /// or from [State.didChangeDependencies] (which is called immediately after
-  /// [State.initState]).
+  /// （直接或间接地）只能在 build 方法、布局和绘制回调，或
+  /// [State.didChangeDependencies]（在 [State.initState] 后立即调用）中使用。
   ///
-  /// This method should not be called from [State.dispose] because the element
-  /// tree is no longer stable at that time. To refer to an ancestor from that
-  /// method, save a reference to the ancestor in [State.didChangeDependencies].
-  /// It is safe to use this method from [State.deactivate], which is called
-  /// whenever the widget is removed from the tree.
+  /// 不应在 [State.dispose] 中调用此方法，因为此时元素树已不稳定。若要在该
+  /// 方法中引用祖先，请在 [State.didChangeDependencies] 中保存引用。该方法在
+  /// [State.deactivate] 中是安全的，后者在 widget 从树中移除时被调用。
   ///
-  /// It is also possible to call this method from interaction event handlers
-  /// (e.g. gesture callbacks) or timers, to obtain a value once, as long as
-  /// that value is not cached and/or reused later.
+  /// 也可以在交互事件回调（如手势）或定时器中调用此方法以获取一次性值，但不要
+  /// 缓存或复用该值。
   ///
-  /// Calling this method is O(1) with a small constant factor, but will lead to
-  /// the widget being rebuilt more often.
+  /// 调用此方法的复杂度为 O(1)，但会导致该 widget 更频繁地重新构建。
   ///
-  /// Once a widget registers a dependency on a particular type by calling this
-  /// method, it will be rebuilt, and [State.didChangeDependencies] will be
-  /// called, whenever changes occur relating to that widget until the next time
-  /// the widget or one of its ancestors is moved (for example, because an
-  /// ancestor is added or removed).
+  /// 一旦 widget 通过调用此方法注册了对某个类型的依赖，只要与该 widget 相关的
+  /// 状态发生变化，它就会被重新构建，并调用 [State.didChangeDependencies]，直
+  /// 到该 widget 或其某个祖先被移动（例如祖先被添加或移除）。
   ///
-  /// The [aspect] parameter is only used when `T` is an
-  /// [InheritedWidget] subclasses that supports partial updates, like
-  /// [InheritedModel]. It specifies what "aspect" of the inherited
-  /// widget this context depends on.
+  /// 参数 [aspect] 仅在 `T` 为支持局部更新的 [InheritedWidget] 子类（如
+  /// [InheritedModel]）时使用，用于指定此上下文依赖于该继承 widget 的哪个
+  /// “方面”。
   /// {@endtemplate}
   T? dependOnInheritedWidgetOfExactType<T extends InheritedWidget>({Object? aspect});
 
-  /// Returns the nearest widget of the given [InheritedWidget] subclass `T` or
-  /// null if an appropriate ancestor is not found.
+  /// 返回给定 [InheritedWidget] 子类 `T` 最近的 widget，若未找到合适的祖先则返
+  /// 回 null。
   ///
-  /// This method does not introduce a dependency the way that the more typical
-  /// [dependOnInheritedWidgetOfExactType] does, so this context will not be
-  /// rebuilt if the [InheritedWidget] changes. This function is meant for those
-  /// uncommon use cases where a dependency is undesirable.
+  /// 该方法不会像 [dependOnInheritedWidgetOfExactType] 那样建立依赖，因此当
+  /// [InheritedWidget] 变化时不会重新构建此 context。它适用于不希望建立依赖
+  /// 的少数情况。
   ///
-  /// This method should not be called from [State.dispose] because the element
-  /// tree is no longer stable at that time. To refer to an ancestor from that
-  /// method, save a reference to the ancestor in [State.didChangeDependencies].
-  /// It is safe to use this method from [State.deactivate], which is called
-  /// whenever the widget is removed from the tree.
+  /// 不应在 [State.dispose] 中调用此方法，因为那时元素树已不稳定。若需在该
+  /// 方法中引用祖先，请在 [State.didChangeDependencies] 中保存引用。此方法在
+  /// [State.deactivate] 中使用是安全的，该回调会在 widget 从树中移除时触发。
   ///
-  /// It is also possible to call this method from interaction event handlers
-  /// (e.g. gesture callbacks) or timers, to obtain a value once, as long as
-  /// that value is not cached and/or reused later.
+  /// 也可以在交互事件回调（如手势）或定时器中调用此方法获取一次性值，只要不
+  /// 缓存或复用该值即可。
   ///
-  /// Calling this method is O(1) with a small constant factor.
+  /// 调用此方法的复杂度为 O(1)。
   T? getInheritedWidgetOfExactType<T extends InheritedWidget>();
 
   /// Obtains the element corresponding to the nearest widget of the given type `T`,
@@ -2254,45 +2218,35 @@ abstract class BuildContext {
   /// return value of this method changes. This could lead to a situation where
   /// data used in the build method changes, but the widget is not rebuilt.
   ///
-  /// Calling this method is relatively expensive (O(N) in the depth of the
-  /// tree). Only call this method if the distance from this widget to the
-  /// desired ancestor is known to be small and bounded.
+  /// 调用此方法相对开销较大（与树的深度成 O(N) 关系）。仅当确定此 widget 与目
+  /// 标祖先之间的距离较小且有上限时才调用。
   ///
-  /// This method should not be called from [State.deactivate] or [State.dispose]
-  /// because the widget tree is no longer stable at that time. To refer to
-  /// an ancestor from one of those methods, save a reference to the ancestor
-  /// by calling [findAncestorWidgetOfExactType] in [State.didChangeDependencies].
+  /// 不应在 [State.deactivate] 或 [State.dispose] 中调用此方法，因为此时 widget
+  /// 树已不稳定。若要在这些方法中引用祖先，请在 [State.didChangeDependencies]
+  /// 中调用 [findAncestorWidgetOfExactType] 保存引用。
   ///
-  /// Returns null if a widget of the requested type does not appear in the
-  /// ancestors of this context.
+  /// 如果该上下文的祖先中没有请求类型的 widget，则返回 null。
   /// {@endtemplate}
   T? findAncestorWidgetOfExactType<T extends Widget>();
 
-  /// Returns the [State] object of the nearest ancestor [StatefulWidget] widget
-  /// that is an instance of the given type `T`.
+  /// 返回最近的祖先 [StatefulWidget] 中类型为 `T` 的 [State] 对象。
   ///
   /// {@template flutter.widgets.BuildContext.findAncestorStateOfType}
-  /// This should not be used from build methods, because the build context will
-  /// not be rebuilt if the value that would be returned by this method changes.
-  /// In general, [dependOnInheritedWidgetOfExactType] is more appropriate for such
-  /// cases. This method is useful for changing the state of an ancestor widget in
-  /// a one-off manner, for example, to cause an ancestor scrolling list to
-  /// scroll this build context's widget into view, or to move the focus in
-  /// response to user interaction.
+  /// 不应在 build 方法中使用，因为当返回值发生变化时，该 build context 不会被
+  /// 重新构建。
+  /// 通常应使用 [dependOnInheritedWidgetOfExactType]，但此方法可在某些场景下
+  /// 用于一次性地修改祖先 widget 的状态，例如让祖先的滚动列表滚动到当前 widget
+  /// 所在位置，或在用户交互时移动焦点。
   ///
-  /// In general, though, consider using a callback that triggers a stateful
-  /// change in the ancestor rather than using the imperative style implied by
-  /// this method. This will usually lead to more maintainable and reusable code
-  /// since it decouples widgets from each other.
+  /// 通常更推荐通过回调触发祖先的状态更新，而不是使用这种命令式方式，这样代码
+  /// 更易维护和复用，因为各 widget 之间解耦。
   ///
-  /// Calling this method is relatively expensive (O(N) in the depth of the
-  /// tree). Only call this method if the distance from this widget to the
-  /// desired ancestor is known to be small and bounded.
+  /// 调用此方法的开销与树的深度成 O(N) 关系，仅当确定到目标祖先的距离较小且有
+  /// 上限时使用。
   ///
-  /// This method should not be called from [State.deactivate] or [State.dispose]
-  /// because the widget tree is no longer stable at that time. To refer to
-  /// an ancestor from one of those methods, save a reference to the ancestor
-  /// by calling [findAncestorStateOfType] in [State.didChangeDependencies].
+  /// 不应在 [State.deactivate] 或 [State.dispose] 中调用，因为此时 widget 树已
+  /// 不稳定。若需在这些方法中引用祖先，请在 [State.didChangeDependencies]
+  /// 中调用 [findAncestorStateOfType] 保存引用。
   /// {@endtemplate}
   ///
   /// {@tool snippet}
@@ -2303,16 +2257,13 @@ abstract class BuildContext {
   /// {@end-tool}
   T? findAncestorStateOfType<T extends State>();
 
-  /// Returns the [State] object of the furthest ancestor [StatefulWidget] widget
-  /// that is an instance of the given type `T`.
+  /// 返回最远的祖先 [StatefulWidget] 中类型为 `T` 的 [State] 对象。
   ///
   /// {@template flutter.widgets.BuildContext.findRootAncestorStateOfType}
-  /// Functions the same way as [findAncestorStateOfType] but keeps visiting subsequent
-  /// ancestors until there are none of the type instance of `T` remaining.
-  /// Then returns the last one found.
+  /// 与 [findAncestorStateOfType] 类似，但会一直向上查找，直到没有类型为 `T`
+  /// 的祖先为止，并返回找到的最后一个。
   ///
-  /// This operation is O(N) as well though N is the entire widget tree rather than
-  /// a subtree.
+  /// 该操作同样是 O(N) 的，其中 N 是整个 widget 树的大小，而不仅仅是某个子树。
   /// {@endtemplate}
   T? findRootAncestorStateOfType<T extends State>();
 
@@ -2320,77 +2271,63 @@ abstract class BuildContext {
   /// that is an instance of the given type `T`.
   ///
   /// {@template flutter.widgets.BuildContext.findAncestorRenderObjectOfType}
-  /// This should not be used from build methods, because the build context will
-  /// not be rebuilt if the value that would be returned by this method changes.
-  /// In general, [dependOnInheritedWidgetOfExactType] is more appropriate for such
-  /// cases. This method is useful only in esoteric cases where a widget needs
-  /// to cause an ancestor to change its layout or paint behavior. For example,
-  /// it is used by [Material] so that [InkWell] widgets can trigger the ink
-  /// splash on the [Material]'s actual render object.
+  /// 不应在 build 方法中使用此方法，因为返回值变化时 build context 不会重新构建。
+  /// 通常应使用 [dependOnInheritedWidgetOfExactType]，此方法仅在少数情况下需要
+  /// 让祖先改变布局或绘制行为时才使用。例如 [Material] 会使用它以便 [InkWell]
+  /// 能在 [Material] 的渲染对象上触发水波效果。
   ///
-  /// Calling this method is relatively expensive (O(N) in the depth of the
-  /// tree). Only call this method if the distance from this widget to the
-  /// desired ancestor is known to be small and bounded.
+  /// 调用此方法的开销与树的深度成 O(N) 关系，仅在确定此 widget 与目标祖先的距
+  /// 离较小且有上限时使用。
   ///
-  /// This method should not be called from [State.deactivate] or [State.dispose]
-  /// because the widget tree is no longer stable at that time. To refer to
-  /// an ancestor from one of those methods, save a reference to the ancestor
-  /// by calling [findAncestorRenderObjectOfType] in [State.didChangeDependencies].
+  /// 不应在 [State.deactivate] 或 [State.dispose] 中调用，因为此时 widget 树已
+  /// 不稳定。若需在这些方法中引用祖先，请在 [State.didChangeDependencies]
+  /// 中调用 [findAncestorRenderObjectOfType] 保存引用。
   /// {@endtemplate}
   T? findAncestorRenderObjectOfType<T extends RenderObject>();
 
-  /// Walks the ancestor chain, starting with the parent of this build context's
-  /// widget, invoking the argument for each ancestor.
+  /// 遍历祖先链，从此构建上下文的父级开始，对每个祖先调用给定回调。
   ///
   /// {@template flutter.widgets.BuildContext.visitAncestorElements}
-  /// The callback is given a reference to the ancestor widget's corresponding
-  /// [Element] object. The walk stops when it reaches the root widget or when
-  /// the callback returns false. The callback must not return null.
+  /// 回调会收到祖先 widget 对应的 [Element] 引用。遍历在到达根 widget 或回调
+  /// 返回 false 时停止。回调不得返回 null。
   ///
-  /// This is useful for inspecting the widget tree.
+  /// 这对于检查 widget 树很有用。
   ///
-  /// Calling this method is relatively expensive (O(N) in the depth of the tree).
+  /// 调用此方法的开销与树的深度成 O(N) 关系。
   ///
-  /// This method should not be called from [State.deactivate] or [State.dispose]
-  /// because the element tree is no longer stable at that time. To refer to
-  /// an ancestor from one of those methods, save a reference to the ancestor
-  /// by calling [visitAncestorElements] in [State.didChangeDependencies].
+  /// 不应在 [State.deactivate] 或 [State.dispose] 中调用，因为此时元素树已不
+  /// 稳定。若需在这些方法中引用祖先，请在 [State.didChangeDependencies]
+  /// 中调用 [visitAncestorElements] 保存引用。
   /// {@endtemplate}
   void visitAncestorElements(ConditionalElementVisitor visitor);
 
-  /// Walks the children of this widget.
+  /// 遍历该 widget 的子节点。
   ///
   /// {@template flutter.widgets.BuildContext.visitChildElements}
-  /// This is useful for applying changes to children after they are built
-  /// without waiting for the next frame, especially if the children are known,
-  /// and especially if there is exactly one child (as is always the case for
-  /// [StatefulWidget]s or [StatelessWidget]s).
+  /// 这在子节点已构建完成后立即应用变更时非常有用，尤其在已知子节点或仅有一
+  /// 个子节点（如 [StatefulWidget] 或 [StatelessWidget]）的情况下。
   ///
-  /// Calling this method is very cheap for build contexts that correspond to
-  /// [StatefulWidget]s or [StatelessWidget]s (O(1), since there's only one
-  /// child).
+  /// 对于对应 [StatefulWidget] 或 [StatelessWidget] 的上下文，调用此方法非常
+  /// 便宜（O(1)，因为只有一个子节点）。
   ///
-  /// Calling this method is potentially expensive for build contexts that
-  /// correspond to [RenderObjectWidget]s (O(N) in the number of children).
+  /// 对于对应 [RenderObjectWidget] 的上下文，调用此方法可能代价较高（与子节
+  /// 点数量成 O(N) 关系）。
   ///
-  /// Calling this method recursively is extremely expensive (O(N) in the number
-  /// of descendants), and should be avoided if possible. Generally it is
-  /// significantly cheaper to use an [InheritedWidget] and have the descendants
-  /// pull data down, than it is to use [visitChildElements] recursively to push
-  /// data down to them.
+  /// 递归调用此方法开销极大（与后代数量成 O(N) 关系），应尽量避免。通常使用
+  /// [InheritedWidget] 让后代自行向下获取数据要比递归调用
+  /// [visitChildElements] 向下推送数据便宜得多。
   /// {@endtemplate}
   void visitChildElements(ElementVisitor visitor);
 
-  /// Start bubbling this notification at the given build context.
+  /// 在给定的构建上下文开始冒泡此通知。
   ///
-  /// The notification will be delivered to any [NotificationListener] widgets
-  /// with the appropriate type parameters that are ancestors of the given
-  /// [BuildContext].
+  /// 通知会传递给给定 [BuildContext] 的祖先中所有具有相应类型参数的
+  /// [NotificationListener] widget。
   void dispatchNotification(Notification notification);
 
-  /// Returns a description of the [Element] associated with the current build context.
+  /// 返回与当前构建上下文关联的 [Element] 的描述。
   ///
-  /// The `name` is typically something like "The element being rebuilt was".
+  /// `name` 通常类似于 "The element being rebuilt was" 这样的描述信息。
   ///
   /// See also:
   ///
@@ -2400,64 +2337,58 @@ abstract class BuildContext {
     DiagnosticsTreeStyle style = DiagnosticsTreeStyle.errorProperty,
   });
 
-  /// Returns a description of the [Widget] associated with the current build context.
+  /// 返回与当前构建上下文关联的 [Widget] 的描述。
   ///
-  /// The `name` is typically something like "The widget being rebuilt was".
+  /// `name` 通常类似于 "The widget being rebuilt was"。
   DiagnosticsNode describeWidget(
     String name, {
     DiagnosticsTreeStyle style = DiagnosticsTreeStyle.errorProperty,
   });
 
-  /// Adds a description of a specific type of widget missing from the current
-  /// build context's ancestry tree.
+  /// 将当前构建上下文的祖先树中缺失的某种 widget 类型的信息加入描述。
   ///
-  /// You can find an example of using this method in [debugCheckHasMaterial].
+  /// 在 [debugCheckHasMaterial] 中可以找到使用该方法的示例。
   List<DiagnosticsNode> describeMissingAncestor({required Type expectedAncestorType});
 
-  /// Adds a description of the ownership chain from a specific [Element]
-  /// to the error report.
+  /// 将特定 [Element] 的所有权链描述添加到错误报告中。
   ///
-  /// The ownership chain is useful for debugging the source of an element.
+  /// 所有权链对于调试元素来源非常有用。
   DiagnosticsNode describeOwnershipChain(String name);
 }
 
-/// A class that determines the scope of a [BuildOwner.buildScope] operation.
+/// 用于确定 [BuildOwner.buildScope] 操作范围的类。
 ///
-/// The [BuildOwner.buildScope] method rebuilds all dirty [Element]s who share
-/// the same [Element.buildScope] as its `context` argument, and skips those
-/// with a different [Element.buildScope].
+/// [BuildOwner.buildScope] 方法会重建所有与其 `context` 参数拥有相同
+/// [Element.buildScope] 的脏 [Element]，并跳过其他作用域的元素。
 ///
-/// [Element]s by default have the same `buildScope` as their parents. Special
-/// [Element]s may override [Element.buildScope] to create an isolated build scope
-/// for its descendants. The [LayoutBuilder] widget, for example, establishes its
-/// own [BuildScope] such that no descendant [Element]s may rebuild prematurely
-/// until the incoming constraints are known.
+/// [Element] 默认与其父级拥有相同的 `buildScope`。某些特殊 [Element]
+/// 可以重写 [Element.buildScope]，为其后代创建独立的构建作用域。例如
+/// [LayoutBuilder] widget 就会建立自己的 [BuildScope]，使得在获取到约束
+/// 之前其后代不会过早重建。
 final class BuildScope {
-  /// Creates a [BuildScope] with an optional [scheduleRebuild] callback.
+  /// 创建 [BuildScope]，可选 [scheduleRebuild] 回调。
   BuildScope({this.scheduleRebuild});
 
-  // Whether `scheduleRebuild` is called.
+  // 是否已调用 `scheduleRebuild`。
   bool _buildScheduled = false;
-  // Whether [BuildOwner.buildScope] is actively running in this [BuildScope].
+  // 当前 [BuildOwner.buildScope] 是否正在此 [BuildScope] 中运行。
   bool _building = false;
 
-  /// An optional [VoidCallback] that will be called when [Element]s in this
-  /// [BuildScope] are marked as dirty for the first time.
+  /// 当此 [BuildScope] 中的 [Element] 首次被标记为脏时要调用的可选
+  /// [VoidCallback]。
   ///
-  /// This callback usually signifies that the [BuildOwner.buildScope] method
-  /// must be called at a later time in this frame to rebuild dirty elements in
-  /// this [BuildScope]. It will **not** be called if this scope is actively being
-  /// built by [BuildOwner.buildScope], since the [BuildScope] will be clean when
-  /// [BuildOwner.buildScope] returns.
+  /// 该回调通常意味着需要在当前帧稍后调用 [BuildOwner.buildScope]，以重建此
+  /// [BuildScope] 中的脏元素。如果该作用域正在被 [BuildOwner.buildScope]
+  /// 构建，则不会调用此回调，因为在 [BuildOwner.buildScope] 返回时作用域已
+  /// 清理完毕。
   final VoidCallback? scheduleRebuild;
 
-  /// Whether [_dirtyElements] need to be sorted again as a result of more
-  /// elements becoming dirty during the build.
+  /// 构建过程中是否有更多元素变脏从而需要重新排序 [_dirtyElements]。
   ///
-  /// This is necessary to preserve the sort order defined by [Element._sort].
+  /// 这样做是为了保持 [Element._sort] 定义的排序顺序。
   ///
-  /// This field is set to null when [BuildOwner.buildScope] is not actively
-  /// rebuilding the widget tree.
+  /// 当 [BuildOwner.buildScope] 未在主动重建 widget 树时，该字段会被设为
+  /// null。
   bool? _dirtyElementsNeedsResorting;
   final List<Element> _dirtyElements = <Element>[];
 
@@ -2522,24 +2453,22 @@ final class BuildScope {
       return true;
     }
     throw FlutterError.fromParts(<DiagnosticsNode>[
-      ErrorSummary('Tried to build dirty widget in the wrong build scope.'),
+      ErrorSummary('尝试在错误的构建作用域中构建已标记为脏的 widget。'),
       ErrorDescription(
-        'A widget which was marked as dirty and is still active was scheduled to be built, '
-        'but the current build scope unexpectedly does not contain that widget.',
+        '一个已标记为脏且仍处于活动状态的 widget 被安排构建，'
+        '但当前的构建作用域意外地不包含该 widget。',
       ),
       ErrorHint(
-        'Sometimes this is detected when an element is removed from the widget tree, but the '
-        'element somehow did not get marked as inactive. In that case, it might be caused by '
-        'an ancestor element failing to implement visitChildren correctly, thus preventing '
-        'some or all of its descendants from being correctly deactivated.',
+        '有时在元素从 widget 树移除但未被标记为非活动状态时会出现此问题，'
+        '可能是某个祖先元素未正确实现 visitChildren，导致部分或全部后代无法正确停用。',
       ),
       DiagnosticsProperty<Element>(
-        'The root of the build scope was',
+        '构建作用域的根为',
         debugBuildRoot,
         style: DiagnosticsTreeStyle.errorProperty,
       ),
       DiagnosticsProperty<Element>(
-        'The offending element (which does not appear to be a descendant of the root of the build scope) was',
+        '问题元素（似乎并不是该构建作用域根的后代）为',
         element,
         style: DiagnosticsTreeStyle.errorProperty,
       ),
@@ -2566,17 +2495,17 @@ final class BuildScope {
         );
         if (missedElements.isNotEmpty) {
           throw FlutterError.fromParts(<DiagnosticsNode>[
-            ErrorSummary('buildScope missed some dirty elements.'),
+            ErrorSummary('buildScope 漏掉了一些脏元素。'),
             ErrorHint(
-              'This probably indicates that the dirty list should have been resorted but was not.',
+              '这通常意味着脏元素列表本应重新排序却没有进行。',
             ),
             DiagnosticsProperty<Element>(
-              'The context argument of the buildScope call was',
+              'buildScope 调用时传入的 context 为',
               debugBuildRoot,
               style: DiagnosticsTreeStyle.errorProperty,
             ),
             Element.describeElements(
-              'The list of missed elements at the end of the buildScope call was',
+              '在 buildScope 调用结束时遗漏的元素列表为',
               missedElements,
             ),
           ]);
